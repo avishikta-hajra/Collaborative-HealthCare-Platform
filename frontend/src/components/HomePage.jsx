@@ -69,7 +69,7 @@ export default function HomePage() {
                     <div className="w-8.5 h-8.5 rounded-lg bg-linear-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center">
                         <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
                     </div>
-                    <span className="font-bold text-lg tracking-tight">MediLink</span>
+                    <span className="font-bold text-lg tracking-tight">HealthBridge</span>
                 </div>
 
                 {/* Hidden on mobile, visible on medium screens and up */}
@@ -192,16 +192,16 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
-                            { icon: "👤", label: "Patient Portal", sub: "Book consultations, track health records, find hospitals", color: "text-[#00C9A7]", border: "border-[#00C9A7]/30", bg: "bg-[#00C9A7]/10", btnBorder: "border-[#00C9A7]/50" },
-                            { icon: "🩺", label: "Doctor Portal", sub: "Manage appointments, conduct video calls, e-prescribe", color: "text-[#0099FF]", border: "border-[#0099FF]/30", bg: "bg-[#0099FF]/10", btnBorder: "border-[#0099FF]/50" },
-                            { icon: "🏥", label: "Hospital / Admin", sub: "Oversee operations, manage staff, track ambulances", color: "text-[#845EF7]", border: "border-[#845EF7]/30", bg: "bg-[#845EF7]/10", btnBorder: "border-[#845EF7]/50" },
+                            { icon: "👤", label: "Patient Portal", route: "/UserLogin", sub: "Book consultations, track health records, find hospitals", color: "text-[#00C9A7]", border: "border-[#00C9A7]/30", bg: "bg-[#00C9A7]/10", btnBorder: "border-[#00C9A7]/50" },
+                            { icon: "🩺", label: "Doctor Portal", route: "/DoctorLogin", sub: "Manage appointments, conduct video calls, e-prescribe", color: "text-[#0099FF]", border: "border-[#0099FF]/30", bg: "bg-[#0099FF]/10", btnBorder: "border-[#0099FF]/50" },
+                            { icon: "🏥", label: "Hospital / Admin", route: "/AdminLogin", sub: "Oversee operations, manage staff, track ambulances", color: "text-[#845EF7]", border: "border-[#845EF7]/30", bg: "bg-[#845EF7]/10", btnBorder: "border-[#845EF7]/50" },
                         ].map((p, i) => (
                             <div key={i} className="bg-white/5 border border-white/10 rounded-[20px] p-10 text-center hover:-translate-y-1.5 hover:scale-[1.02] transition-all duration-300 cursor-pointer group">
                                 <div className={`w-17.5 h-17.5 rounded-[20px] ${p.bg} flex items-center justify-center text-3xl mx-auto mb-6 border ${p.border}`}>{p.icon}</div>
                                 <h3 className={`text-[22px] font-bold mb-2.5 ${p.color}`}>{p.label}</h3>
                                 <p className="text-[#94A3C0] text-sm leading-relaxed mb-7">{p.sub}</p>
                                 <button
-                                    onClick={() => navigate('/telemedicine')}
+                                    onClick={() => navigate(p.route)}
                                     className={`w-full ${p.bg} border-[1.5px] ${p.btnBorder} ${p.color} font-semibold text-sm py-3 rounded-xl group-hover:bg-white/10 transition-colors`}>Sign In →</button>
                             </div>
                         ))}
@@ -215,9 +215,9 @@ export default function HomePage() {
                     <div className="w-7 h-7 rounded-md bg-linear-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center">
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
                     </div>
-                    <span className="font-bold text-base">MediLink</span>
+                    <span className="font-bold text-base">HealthBridge</span>
                 </div>
-                <p className="text-[#94A3C0] text-sm text-center">© 2026 MediLink. Built with care for better health outcomes.</p>
+                <p className="text-[#94A3C0] text-sm text-center">© 2026 HealthBridge. Built with care for better health outcomes.</p>
                 <div className="flex gap-5">
                     {["Privacy", "Terms", "Contact"].map(l => (
                         <a key={l} href="#" className="text-[#94A3C0] text-sm hover:text-white transition-colors">{l}</a>

@@ -12,7 +12,7 @@ export default function AdminLogin() {
     };
 
     return (
-        <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", background: "#050D1A", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
+        <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
             <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +33,7 @@ export default function AdminLogin() {
     `}</style>
 
             {/* LEFT PANEL */}
-            <div style={{ flex: "0 0 45%", background: "linear-gradient(160deg, #071628 0%, #0A2440 50%, #071628 100%)", padding: "60px 48px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
+            <div style={{ flex: "0 0 45%",padding: "60px 48px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(132,94,247,0.08), transparent 70%)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", bottom: -80, left: -80, width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,153,255,0.07), transparent 70%)", pointerEvents: "none" }} />
 

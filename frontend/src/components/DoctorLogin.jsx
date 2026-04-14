@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 export default function DoctorLogin() {
-  const [form, setForm] = useState({ email: "", password: "", remember: false });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "", phone: "", remember: false });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [tab, setTab] = useState("login"); // login | register
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
     setLoading(true);
@@ -12,165 +15,102 @@ export default function DoctorLogin() {
   };
 
   return (
-    <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
-      <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @keyframes fadeIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-    .input-field { width:100%; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1); border-radius:12px; padding:14px 16px; color:#E8F0FE; font-family:inherit; font-size:15px; outline:none; transition:all 0.2s; }
-    .input-field::placeholder { color:#4A6080; }
-    .input-field:focus { border-color:#0099FF; background:rgba(0,153,255,0.04); box-shadow:0 0 0 4px rgba(0,153,255,0.06); }
-    .btn-main { width:100%; background:linear-gradient(135deg,#0099FF,#00C9A7); border:none; color:#fff; font-family:inherit; font-weight:700; font-size:16px; padding:15px; border-radius:12px; cursor:pointer; transition:all 0.25s; letter-spacing:0.01em; }
-    .btn-main:hover { transform:translateY(-2px); box-shadow:0 10px 35px rgba(0,153,255,0.25); }
-    .btn-main:disabled { opacity:0.7; transform:none; }
-    .social-btn { flex:1; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1); color:#E8F0FE; font-family:inherit; font-weight:500; font-size:14px; padding:12px; border-radius:10px; cursor:pointer; transition:all 0.2s; }
-    .social-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); }
-    .tab-btn { flex:1; padding:"12px 0"; background:transparent; border:none; color:#4A6080; font-family:inherit; font-weight:600; font-size:15px; cursor:pointer; transition:all 0.2s; padding:12px 0; border-bottom:2px solid transparent; }
-    .tab-btn.active { color:#0099FF; border-bottom-color:#0099FF; }
-    .feature-item { display:flex; align-items:flex-start; gap:14px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
-    .feature-item:last-child { border-bottom:none; }
-    `}</style>
-
-      {/* LEFT PANEL */}
-      <div style={{ flex: "0 0 45%", background: "linear-gradient(160deg, #071628 0%, #0A2440 50%, #071628 100%)", padding: "60px 48px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,153,255,0.08), transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -80, left: -80, width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,201,167,0.07), transparent 70%)", pointerEvents: "none" }} />
-
-        <div>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 64 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#0099FF,#00C9A7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
-            </div>
-            <span style={{ color: "#E8F0FE", fontWeight: 700, fontSize: 18 }}>HealthBridge</span>
-          </a>
-
-          <div style={{ marginBottom: 20 }}>
-            <span style={{ display: "inline-block", background: "rgba(0,153,255,0.12)", color: "#0099FF", fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", padding: "4px 12px", borderRadius: 100, border: "1px solid rgba(0,153,255,0.25)", marginBottom: 20 }}>DOCTOR PORTAL</span>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,3vw,40px)", color: "#E8F0FE", lineHeight: 1.15, marginBottom: 16 }}>Your practice,<br /><span style={{ fontStyle: "italic", background: "linear-gradient(135deg,#0099FF,#00C9A7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>efficiently managed.</span></h2>
-            <p style={{ color: "#6A84A0", fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>Manage appointments, conduct secure video consultations, and access your patients' records with ease.</p>
-          </div>
-        </div>
-
-        <div>
-          {[{ icon: "🩺", title: "Manage Appointments", desc: "View and modify your upcoming schedule." }, { icon: "📹", title: "Secure Video Calls", desc: "Encrypted consultations with patients." }, { icon: "💊", title: "E-Prescriptions", desc: "Prescribe and deliver medications digitally." }].map((f, i) => (
-            <div key={i} className="feature-item">
-              <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(0,153,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "#E8F0FE", marginBottom: 3 }}>{f.title}</div>
-                <div style={{ fontSize: 13, color: "#6A84A0" }}>{f.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 40, padding: "20px 24px", background: "rgba(0,153,255,0.06)", borderRadius: 14, border: "1px solid rgba(0,153,255,0.15)" }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg,#0099FF,#00C9A7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👍</div>
-            <div>
-              <div style={{ color: "#E8F0FE", fontSize: 14, fontWeight: 600, marginBottom: 2 }}>"Trusted by doctors nationwide."</div>
-              <div style={{ color: "#6A84A0", fontSize: 12 }}>Dr. Anil K., cardiologist</div>
-            </div>
+    <div className="min-h-screen flex items-center justify-center font-sans overflow-hidden bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 pt-24">
+      {/* Top navbar like HomePage/AdminLogin */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="w-full">
+            <button onClick={() => navigate('/PortalSelection')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4">
+              <ArrowLeft className="w-5 h-5 mr-2" /> Back to Portal selection
+            </button>
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANEL — FORM */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px clamp(24px,5vw,72px)", animation: "fadeIn 0.5s ease" }}>
-        <div style={{ width: "100%", maxWidth: 440 }}>
-          <div style={{ marginBottom: 36 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 32, color: "#E8F0FE", marginBottom: 8 }}>Welcome back</h1>
-            <p style={{ color: "#6A84A0", fontSize: 15 }}>Sign in to your doctor account</p>
+      <div className="w-full max-w-md py-6 mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl p-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
+            <p className="text-sm text-gray-500">Sign in to your doctor account</p>
           </div>
 
-          {/* TABS */}
-          <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 32, gap: 0 }}>
-            <button className={`tab-btn ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>Sign In</button>
-            <button className={`tab-btn ${tab === "register" ? "active" : ""}`} onClick={() => setTab("register")}>Create Account</button>
-          </div>
-
-          {/* Social */}
-          <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
-            <button className="social-btn">
-              <span style={{ marginRight: 8 }}>G</span> Google
+          <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
+            <button onClick={() => setTab('login')} className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all ${tab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'}`}>
+              <LogInIcon className="w-4 h-4" />
+              <span>Login</span>
             </button>
-            <button className="social-btn">
-              <span style={{ marginRight: 8 }}>𝑓</span> Facebook
+            <button onClick={() => setTab('register')} className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all ${tab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'}`}>
+              <UserPlusIcon className="w-4 h-4" />
+              <span>Register</span>
             </button>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-            <span style={{ color: "#4A6080", fontSize: 13 }}>or continue with email</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-          </div>
-
-          {/* Form fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {tab === "register" && (
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+            {tab === 'register' && (
               <div>
-                <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Full Name</label>
-                <input className="input-field" placeholder="Dr. Name" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <div className="relative">
+                  <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input name="fullName" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="Dr. Name" className="w-full pl-12 pr-4 py-3 border rounded-xl" />
+                </div>
               </div>
             )}
+
             <div>
-              <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Email Address</label>
-              <input className="input-field" type="email" placeholder="you@clinic.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <label style={{ color: "#94A3C0", fontSize: 13, fontWeight: 500 }}>Password</label>
-                {tab === "login" && <a href="#" style={{ color: "#0099FF", fontSize: 13, textDecoration: "none" }}>Forgot password?</a>}
-              </div>
-              <div style={{ position: "relative" }}>
-                <input className="input-field" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} style={{ paddingRight: 48 }} />
-                <button onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#4A6080", cursor: "pointer", fontSize: 18 }}>
-                  {showPass ? "👁" : "🔒"}
-                </button>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <div className="relative">
+                <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input name="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} type="email" placeholder="you@clinic.com" className="w-full pl-12 pr-4 py-3 border rounded-xl" />
               </div>
             </div>
-            {tab === "register" && (
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <div className="relative">
+                <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input name="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} type={showPass ? 'text' : 'password'} placeholder="••••••••" className="w-full pl-12 pr-12 py-3 border rounded-xl" />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">{showPass ? 'Hide' : 'Show'}</button>
+              </div>
+            </div>
+
+            {tab === 'register' && (
               <div>
-                <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Phone Number</label>
-                <input className="input-field" placeholder="+91 98765 43210" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input name="phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+91 98765 43210" className="w-full pl-4 pr-4 py-3 border rounded-xl" />
               </div>
             )}
-            {tab === "login" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <input type="checkbox" id="remember" style={{ accentColor: "#0099FF", width: 16, height: 16 }} checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} />
-                <label htmlFor="remember" style={{ color: "#6A84A0", fontSize: 14, cursor: "pointer" }}>Remember me for 30 days</label>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <input id="remember" type="checkbox" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} className="w-4 h-4 accent-cyan-400" />
+                <label htmlFor="remember" className="text-sm text-gray-500">Remember me for 30 days</label>
               </div>
-            )}
-          </div>
+              {tab === 'login' && <a href="#" className="text-sm text-cyan-400">Forgot password?</a>}
+            </div>
 
-          <button className="btn-main" style={{ marginTop: 28 }} onClick={handleSubmit} disabled={loading}>
-            {loading ? (
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
-                Signing in...
-              </span>
-            ) : tab === "login" ? "Sign In to Doctor Portal →" : "Create Doctor Account →"}
-          </button>
+            <button type="submit" className="w-full py-4 bg-cyan-500 text-white rounded-xl font-semibold">{loading ? 'Signing in...' : (tab === 'login' ? 'Sign In to Doctor Portal' : 'Create Doctor Account')}</button>
 
-          <p style={{ textAlign: "center", marginTop: 24, color: "#4A6080", fontSize: 13 }}>
-            {tab === "login" ? "Don't have an account? " : "Already registered? "}
-            <span onClick={() => setTab(tab === "login" ? "register" : "login")} style={{ color: "#0099FF", cursor: "pointer", fontWeight: 600 }}>
-              {tab === "login" ? "Create one free" : "Sign in"}
-            </span>
-          </p>
+            <div className="text-center text-sm text-gray-500 mt-2">
+              {tab === 'login' ? (
+                <span>Don't have an account? <button type="button" onClick={() => setTab('register')} className="text-cyan-400 font-semibold">Create one</button></span>
+              ) : (
+                <span>Already have an account? <button type="button" onClick={() => setTab('login')} className="text-cyan-400 font-semibold">Sign in</button></span>
+              )}
+            </div>
+          </form>
 
-          <div style={{ marginTop: 40, padding: "16px", background: "rgba(255,107,107,0.06)", borderRadius: 12, border: "1px solid rgba(255,107,107,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 22 }}>🚨</span>
+          <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+            <span className="text-2xl">🚨</span>
             <div>
-              <div style={{ color: "#FF6B6B", fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Medical Emergency?</div>
-              <div style={{ color: "#6A84A0", fontSize: 12 }}>Call <strong style={{ color: "#FF6B6B" }}>112</strong> or use our emergency feature</div>
+              <div className="text-red-600 text-sm font-bold">Medical Emergency?</div>
+              <div className="text-sm text-gray-600">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
             </div>
           </div>
 
-          <p style={{ textAlign: "center", marginTop: 28, color: "#2D4060", fontSize: 12 }}>
-            Not a doctor? <a href="/UserLogin" style={{ color: "#00C9A7", textDecoration: "none" }}>Patient Login</a> · <a href="/AdminLogin" style={{ color: "#845EF7", textDecoration: "none" }}>Admin Login</a>
-          </p>
+          <p className="text-center mt-6 text-sm text-gray-500">Not a doctor? <a href="/UserLogin" className="text-cyan-600">Patient Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p>
         </div>
       </div>
     </div>

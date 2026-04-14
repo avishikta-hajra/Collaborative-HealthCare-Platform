@@ -4,7 +4,7 @@ export default function AdminLogin() {
     const [form, setForm] = useState({ email: "", password: "", remember: false });
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
-    const [tab, setTab] = useState("login"); // login | register
+    const [tab, setTab] = useState("login");
 
     const handleSubmit = () => {
         setLoading(true);
@@ -12,163 +12,124 @@ export default function AdminLogin() {
     };
 
     return (
-        <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
-            <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @keyframes fadeIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .input-field { width:100%; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1); border-radius:12px; padding:14px 16px; color:#E8F0FE; font-family:inherit; font-size:15px; outline:none; transition:all 0.2s; }
-    .input-field::placeholder { color:#4A6080; }
-    .input-field:focus { border-color:#845EF7; background:rgba(132,94,247,0.04); box-shadow:0 0 0 4px rgba(132,94,247,0.06); }
-    .btn-main { width:100%; background:linear-gradient(135deg,#845EF7,#0099FF); border:none; color:#fff; font-family:inherit; font-weight:700; font-size:16px; padding:15px; border-radius:12px; cursor:pointer; transition:all 0.25s; letter-spacing:0.01em; }
-    .btn-main:hover { transform:translateY(-2px); box-shadow:0 10px 35px rgba(132,94,247,0.25); }
-    .btn-main:disabled { opacity:0.7; transform:none; }
-    .social-btn { flex:1; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1); color:#E8F0FE; font-family:inherit; font-weight:500; font-size:14px; padding:12px; border-radius:10px; cursor:pointer; transition:all 0.2s; }
-    .social-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); }
-    .tab-btn { flex:1; padding:"12px 0"; background:transparent; border:none; color:#4A6080; font-family:inherit; font-weight:600; font-size:15px; cursor:pointer; transition:all 0.2s; padding:12px 0; border-bottom:2px solid transparent; }
-    .tab-btn.active { color:#845EF7; border-bottom-color:#845EF7; }
-    .feature-item { display:flex; align-items:flex-start; gap:14px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
-    .feature-item:last-child { border-bottom:none; }
-    `}</style>
+        <div className="min-h-screen flex items-stretch font-sans bg-slate-50 overflow-hidden">
 
-            {/* LEFT PANEL */}
-            <div style={{ flex: "0 0 45%",padding: "60px 48px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(132,94,247,0.08), transparent 70%)", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", bottom: -80, left: -80, width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,153,255,0.07), transparent 70%)", pointerEvents: "none" }} />
+            {/* LEFT PANEL (Dark Blue Theme with Yellow/Cyan Accents) */}
+            <div className="hidden lg:flex w-[45%] bg-blue-950 p-12 flex-col justify-between relative overflow-hidden text-white">
+                {/* Decorative Elements */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-yellow-400/10 blur-3xl pointer-events-none" />
 
-                <div>
-                    <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 64 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#845EF7,#0099FF)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
+                <div className="relative z-10">
+                    <a href="/" className="flex items-center gap-3 text-white no-underline mb-16">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
                         </div>
-                        <span style={{ color: "#E8F0FE", fontWeight: 700, fontSize: 18 }}>HealthBridge</span>
+                        <span className="font-bold text-xl tracking-tight">HealthBridge</span>
                     </a>
 
-                    <div style={{ marginBottom: 20 }}>
-                        <span style={{ display: "inline-block", background: "rgba(132,94,247,0.12)", color: "#845EF7", fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", padding: "4px 12px", borderRadius: 100, border: "1px solid rgba(132,94,247,0.25)", marginBottom: 20 }}>ADMIN PORTAL</span>
-                        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,3vw,40px)", color: "#E8F0FE", lineHeight: 1.15, marginBottom: 16 }}>Operate better,<br /><span style={{ fontStyle: "italic", background: "linear-gradient(135deg,#845EF7,#0099FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>manage operations.</span></h2>
-                        <p style={{ color: "#6A84A0", fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>Admin dashboard to oversee hospitals, staff, ambulance tracking and system settings.</p>
+                    <div className="mb-8">
+                        <span className="inline-block bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 text-xs font-bold tracking-widest px-3 py-1.5 rounded-full mb-5 uppercase">
+                            Admin Portal
+                        </span>
+                        <h2 className="text-4xl lg:text-5xl font-bold leading-tight mb-4 font-poppins">
+                            Operate better,<br/>
+                            <span className="text-cyan-400 italic">manage operations.</span>
+                        </h2>
+                        <p className="text-blue-200 text-base leading-relaxed max-w-sm">
+                            Admin dashboard to oversee hospitals, staff, ambulance tracking and system settings.
+                        </p>
                     </div>
                 </div>
 
-                <div>
-                    {[{ icon: "🏥", title: "Facility Overview", desc: "Monitor hospital performance and metrics." }, { icon: "👥", title: "Staff Management", desc: "Add/remove staff, assign roles and permissions." }, { icon: "🚑", title: "Ambulance Tracking", desc: "Real-time fleet visibility and dispatch." }].map((f, i) => (
-                        <div key={i} className="feature-item">
-                            <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(132,94,247,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
+                <div className="relative z-10">
+                    {[
+                        { icon: "🏥", title: "Facility Overview", desc: "Monitor hospital performance and metrics." },
+                        { icon: "👥", title: "Staff Management", desc: "Add/remove staff, assign roles and permissions." },
+                        { icon: "🚑", title: "Ambulance Tracking", desc: "Real-time fleet visibility and dispatch." }
+                    ].map((f, i) => (
+                        <div key={i} className="flex items-start gap-4 py-4 border-b border-white/10 last:border-none">
+                            <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl shrink-0">{f.icon}</div>
                             <div>
-                                <div style={{ fontWeight: 600, fontSize: 14, color: "#E8F0FE", marginBottom: 3 }}>{f.title}</div>
-                                <div style={{ fontSize: 13, color: "#6A84A0" }}>{f.desc}</div>
+                                <div className="font-semibold text-[15px] text-white mb-1">{f.title}</div>
+                                <div className="text-[13px] text-blue-200">{f.desc}</div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div style={{ marginTop: 40, padding: "20px 24px", background: "rgba(132,94,247,0.05)", borderRadius: 14, border: "1px solid rgba(132,94,247,0.12)" }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg,#845EF7,#0099FF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📊</div>
+                <div className="mt-10 p-5 bg-white/5 rounded-2xl border border-white/10 relative z-10">
+                    <div className="flex gap-3 items-center">
+                        <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-lg">📊</div>
                         <div>
-                            <div style={{ color: "#E8F0FE", fontSize: 14, fontWeight: 600, marginBottom: 2 }}>"Trusted by hospital admins."</div>
-                            <div style={{ color: "#6A84A0", fontSize: 12 }}>Admin Team, City Hospital</div>
+                            <div className="text-white text-sm font-semibold mb-0.5">"Trusted by hospital admins."</div>
+                            <div className="text-blue-200 text-xs">Admin Team, City Hospital</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* RIGHT PANEL — FORM */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px clamp(24px,5vw,72px)", animation: "fadeIn 0.5s ease" }}>
-                <div style={{ width: "100%", maxWidth: 440 }}>
-                    <div style={{ marginBottom: 36 }}>
-                        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 32, color: "#E8F0FE", marginBottom: 8 }}>Welcome back</h1>
-                        <p style={{ color: "#6A84A0", fontSize: 15 }}>Sign in to your admin account</p>
+            {/* RIGHT PANEL — FORM (Light Theme) */}
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 animate-fade-in bg-white">
+                <div className="w-full max-w-md">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-blue-950 mb-2 font-poppins">Welcome back</h1>
+                        <p className="text-slate-500 text-sm">Sign in to your admin account</p>
                     </div>
 
                     {/* TABS */}
-                    <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 32, gap: 0 }}>
-                        <button className={`tab-btn ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>Sign In</button>
-                        <button className={`tab-btn ${tab === "register" ? "active" : ""}`} onClick={() => setTab("register")}>Create Account</button>
-                    </div>
-
-                    {/* Social */}
-                    <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
-                        <button className="social-btn">
-                            <span style={{ marginRight: 8 }}>G</span> Google
-                        </button>
-                        <button className="social-btn">
-                            <span style={{ marginRight: 8 }}>𝑓</span> Facebook
-                        </button>
-                    </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-                        <span style={{ color: "#4A6080", fontSize: 13 }}>or continue with email</span>
-                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
+                    <div className="flex border-b border-slate-200 mb-8">
+                        <button className={`flex-1 pb-3 text-sm font-semibold transition-all border-b-2 ${tab === "login" ? "text-blue-600 border-blue-600" : "text-slate-400 border-transparent hover:text-slate-600"}`} onClick={() => setTab("login")}>Sign In</button>
+                        <button className={`flex-1 pb-3 text-sm font-semibold transition-all border-b-2 ${tab === "register" ? "text-blue-600 border-blue-600" : "text-slate-400 border-transparent hover:text-slate-600"}`} onClick={() => setTab("register")}>Create Account</button>
                     </div>
 
                     {/* Form fields */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div className="flex flex-col gap-4">
                         {tab === "register" && (
                             <div>
-                                <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Full Name</label>
-                                <input className="input-field" placeholder="Name" />
+                                <label className="block text-slate-700 text-[13px] font-semibold mb-1.5">Full Name</label>
+                                <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Name" />
                             </div>
                         )}
                         <div>
-                            <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Email Address</label>
-                            <input className="input-field" type="email" placeholder="admin@hospital.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                            <label className="block text-slate-700 text-[13px] font-semibold mb-1.5">Email Address</label>
+                            <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" type="email" placeholder="admin@hospital.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                         </div>
                         <div>
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                                <label style={{ color: "#94A3C0", fontSize: 13, fontWeight: 500 }}>Password</label>
-                                {tab === "login" && <a href="#" style={{ color: "#845EF7", fontSize: 13, textDecoration: "none" }}>Forgot password?</a>}
+                            <div className="flex justify-between mb-1.5">
+                                <label className="text-slate-700 text-[13px] font-semibold">Password</label>
+                                {tab === "login" && <a href="#" className="text-blue-600 text-[13px] hover:underline">Forgot password?</a>}
                             </div>
-                            <div style={{ position: "relative" }}>
-                                <input className="input-field" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} style={{ paddingRight: 48 }} />
-                                <button onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#4A6080", cursor: "pointer", fontSize: 18 }}>
+                            <div className="relative">
+                                <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all pr-12" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+                                <button onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 text-lg">
                                     {showPass ? "👁" : "🔒"}
                                 </button>
                             </div>
                         </div>
-                        {tab === "register" && (
-                            <div>
-                                <label style={{ display: "block", color: "#94A3C0", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Phone Number</label>
-                                <input className="input-field" placeholder="+91 98765 43210" />
-                            </div>
-                        )}
                         {tab === "login" && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <input type="checkbox" id="remember" style={{ accentColor: "#845EF7", width: 16, height: 16 }} checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} />
-                                <label htmlFor="remember" style={{ color: "#6A84A0", fontSize: 14, cursor: "pointer" }}>Remember me for 30 days</label>
+                            <div className="flex items-center gap-2 mt-1">
+                                <input type="checkbox" id="remember" className="w-4 h-4 accent-blue-600 rounded cursor-pointer" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} />
+                                <label htmlFor="remember" className="text-slate-500 text-sm cursor-pointer">Remember me for 30 days</label>
                             </div>
                         )}
                     </div>
 
-                    <button className="btn-main" style={{ marginTop: 28 }} onClick={handleSubmit} disabled={loading}>
-                        {loading ? (
-                            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                                <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
-                                Signing in...
-                            </span>
-                        ) : tab === "login" ? "Sign In to Admin Portal →" : "Create Admin Account →"}
+                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[15px] py-3.5 rounded-xl mt-8 transition-all shadow-md shadow-blue-600/20 disabled:opacity-70" onClick={handleSubmit} disabled={loading}>
+                        {loading ? "Signing in..." : tab === "login" ? "Sign In to Admin Portal →" : "Create Admin Account →"}
                     </button>
 
-                    <p style={{ textAlign: "center", marginTop: 24, color: "#4A6080", fontSize: 13 }}>
-                        {tab === "login" ? "Don't have an account? " : "Already registered? "}
-                        <span onClick={() => setTab(tab === "login" ? "register" : "login")} style={{ color: "#845EF7", cursor: "pointer", fontWeight: 600 }}>
-                            {tab === "login" ? "Create one free" : "Sign in"}
-                        </span>
-                    </p>
-
-                    <div style={{ marginTop: 40, padding: "16px", background: "rgba(255,107,107,0.06)", borderRadius: 12, border: "1px solid rgba(255,107,107,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ fontSize: 22 }}>🚨</span>
+                    {/* Restored Emergency Banner */}
+                    <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+                        <span className="text-2xl">🚨</span>
                         <div>
-                            <div style={{ color: "#FF6B6B", fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Medical Emergency?</div>
-                            <div style={{ color: "#6A84A0", fontSize: 12 }}>Call <strong style={{ color: "#FF6B6B" }}>112</strong> or use our emergency feature</div>
+                            <div className="text-red-600 text-[13px] font-bold mb-0.5">Medical Emergency?</div>
+                            <div className="text-slate-600 text-xs">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
                         </div>
                     </div>
 
-                    <p style={{ textAlign: "center", marginTop: 28, color: "#2D4060", fontSize: 12 }}>
-                        Not an admin? <a href="/UserLogin" style={{ color: "#00C9A7", textDecoration: "none" }}>Patient Login</a> · <a href="/DoctorLogin" style={{ color: "#0099FF", textDecoration: "none" }}>Doctor Login</a>
+                    <p className="text-center mt-8 text-slate-500 text-xs">
+                        Not an admin? <a href="/UserLogin" className="text-cyan-600 font-semibold hover:underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 font-semibold hover:underline">Doctor Login</a>
                     </p>
                 </div>
             </div>

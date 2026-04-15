@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon, Stethoscope } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
 export default function DoctorLogin() {
@@ -31,7 +31,7 @@ export default function DoctorLogin() {
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-white" />
+              <Stethoscope className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
             <p className="text-sm text-gray-500">Sign in to your doctor account</p>
@@ -101,16 +101,16 @@ export default function DoctorLogin() {
               )}
             </div>
           </form>
-
-          <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+          {/* REMOVED */}
+          {/* <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
             <span className="text-2xl">🚨</span>
             <div>
               <div className="text-red-600 text-sm font-bold">Medical Emergency?</div>
               <div className="text-sm text-gray-600">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
             </div>
-          </div>
+          </div> */}
 
-          <p className="text-center mt-6 text-sm text-gray-500">Not a doctor? <a href="/UserLogin" className="text-cyan-600">Patient Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p>
+          {/* <p className="text-center mt-6 text-sm text-gray-500">Not a doctor? <a href="/UserLogin" className="text-cyan-600">Patient Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p> */}
         </div>
       </div>
     </div>

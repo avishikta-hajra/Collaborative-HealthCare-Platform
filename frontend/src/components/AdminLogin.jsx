@@ -3,7 +3,7 @@ import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIc
 import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
-    const [form, setForm] = useState({ email: "", password: "", remember: false });
+    const [form, setForm] = useState({ email: "", password: "", phone: "", remember: false });
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
     const [tab, setTab] = useState("login");
@@ -74,7 +74,12 @@ export default function AdminLogin() {
                                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">{showPass ? 'Hide' : 'Show'}</button>
                             </div>
                         </div>
-
+                        {tab === 'register' && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input name="phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+91 98765 43210" className="w-full pl-4 pr-4 py-3 border rounded-xl" />
+                            </div>
+                        )}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <input id="remember" type="checkbox" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} className="w-4 h-4 accent-blue-600" />

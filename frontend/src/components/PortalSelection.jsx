@@ -5,12 +5,11 @@ import { ArrowLeft, User, Stethoscope, Shield } from 'lucide-react';
 export default function PortalSelection() {
     const navigate = useNavigate();
     return (
-        <section className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 px-4 py-16 flex items-center justify-center pt-30">
+        <section className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-100 border-t-2 px-4 py-16 flex items-center justify-center pt-30">
             <div className="max-w-4xl mx-auto w-full">
-                <div className="text-center mb-10">
-                    <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">Portals</span>
+                <div className="text-center mt-2 mb-10">
                     <h2 className="font-heading text-2xl md:text-4xl font-bold text-blue-950">Choose Your Access Portal</h2>
-                    <p className="text-slate-600 text-sm mt-2 max-w-md mx-auto">Tailored dashboards for patients, medical professionals, and administrators.</p>
+                    <p className="text-slate-600 text-sm mt-2 max-w-l mx-auto">Tailored dashboards for patients, medical professionals, and administrators.</p>
                 </div>
                 {/* Top fixed navbar styled like HomePage */}
                 <div className="fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300">

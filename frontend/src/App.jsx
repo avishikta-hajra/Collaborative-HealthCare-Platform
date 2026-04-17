@@ -4,6 +4,7 @@ import Telemedicine from "./components/Telemedicine";
 import UserLogin from "./components/UserLogin";
 import DoctorLogin from "./components/DoctorLogin";
 import AdminLogin from "./components/AdminLogin";
+import PortalSelection from "./components/PortalSelection"; // Newly added for portal selection page
 
 export default function App() {
   return (
@@ -14,6 +15,8 @@ export default function App() {
         <Route path="/UserLogin" element={<UserLogin />} />
         <Route path="/DoctorLogin" element={<DoctorLogin />} />
         <Route path="/AdminLogin" element={<AdminLogin />} />
+        // Newly added route for portal selection page
+        <Route path="/PortalSelection" element={<PortalSelection />} />
       </Routes>
     </Router>
   );

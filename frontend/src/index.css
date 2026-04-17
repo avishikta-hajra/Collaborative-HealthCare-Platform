@@ -5,8 +5,9 @@
 
 @layer base {
   body {
-    background-color: #050D1A;
-    color: #E8F0FE;
+    background-image: linear-gradient(to right,
+          rgba(63,92,139, 0.2),
+          rgba(65,105,180, 0.2));
     font-family: 'Outfit', 'Segoe UI', sans-serif;
     overflow-x: hidden;
   }
@@ -17,7 +18,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #050D1A;
+    background: royalblue;
   }
 
   ::-webkit-scrollbar-thumb {

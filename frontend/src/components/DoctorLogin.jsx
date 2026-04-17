@@ -12,7 +12,7 @@ export default function DoctorLogin() {
   };
 
   return (
-    <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", background: "#050D1A", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
+    <div style={{ fontFamily: "'Outfit', 'Segoe UI', sans-serif", minHeight: "100vh", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
       <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }

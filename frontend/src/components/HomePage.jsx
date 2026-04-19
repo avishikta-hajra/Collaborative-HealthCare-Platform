@@ -95,7 +95,7 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950">
-            <nav className={`fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-[72px] flex items-center justify-between transition-all duration-300 ${scrolled ? "bg-blue-100/85 backdrop-blur-md shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300" : "bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300"}`}>
+            <nav className={`fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 ${scrolled ? "bg-blue-100/85 backdrop-blur-md shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300" : "bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300"}`}>
 
                 {/* Left Side: Logo & Links */}
                 <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function HomePage() {
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 flex">
                     <div className="absolute inset-0 bg-blue-950/30 backdrop-blur-xs transition-opacity" onClick={() => setSidebarOpen(false)} />
-                    <aside className="absolute left-0 top-0 w-72 max-w-[80vw] h-full bg-gradient-to-tl from-cyan-50 to-blue-200 p-6 shadow-2xl flex flex-col">
+                    <aside className="absolute left-0 top-0 w-72 max-w-[80vw] h-full bg-linear-to-tl from-cyan-50 to-blue-200 p-6 shadow-2xl flex flex-col">
                         <div className="flex items-center justify-between mb-8">
                             <div className="font-poppins font-bold text-2xl text-sky-800 flex items-center gap-2">
                                 HealthBridge
@@ -203,7 +203,7 @@ export default function HomePage() {
                       </section>
 
             {/* FEATURES - Divider & Cyan Highlight Accents */}
-            <section className="relative bg-white px-4 md:px-10 lg:px-10 py-12 bg-gradient-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 border-bold border-blue-300" id="features">
+            <section className="relative bg-white px-4 md:px-10 lg:px-10 py-12 bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 border-bold border-blue-300" id="features">
                 <div className="max-w-6xl mx-auto relative z-10">
                     <div className="text-center mb-10">
                         <h2 className="font-poppins text-2xl md:text-2xl font-bold text-blue-950 tracking-widest mb-3">Everything You Need,<span className="text-blue-900"> All in One Place</span></h2>
@@ -212,13 +212,13 @@ export default function HomePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         {features.map((f, i) => (
-                            <div key={i} className="bg-white border border-sky-700 border-2 rounded-[24px] p-8 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 border-2 transition-all duration-300 flex flex-col items-center text-center h-full group">
+                            <div key={i} className="bg-white border-sky-700 border-2 rounded-3xl p-8 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 flex flex-col items-center text-center h-full group">
                                 {/* Centered Icon with Glowing Cyan Dropshadow */}
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center mb-6 shadow-inner shadow-white border-2 border-cyan-700/80 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
+                                <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-cyan-50 to-blue-50 flex items-center justify-center mb-6 shadow-inner shadow-white border-2 border-cyan-700/80 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
                                     {f.icon}
                                 </div>
                                 <h3 className="text-[18px] font-bold text-sky-950 mb-3">{f.title}</h3>
-                                <p className="text-slate-500 text-[14px] leading-relaxed mb-6 flex-grow">{f.desc}</p>
+                                <p className="text-slate-500 text-[14px] leading-relaxed mb-6 grow">{f.desc}</p>
 
                                 <div onClick={() => navigate(f.route)} className="flex items-center gap-1.5 text-blue-800 text-[16px] font-bold cursor-pointer hover:text-blue-950 transition-colors">
                                     Access Now

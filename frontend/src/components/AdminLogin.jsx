@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
     const [form, setForm] = useState({ email: "", password: "", remember: false });
@@ -10,127 +12,97 @@ export default function AdminLogin() {
         setLoading(true);
         setTimeout(() => setLoading(false), 1800);
     };
-
+    const navigate = useNavigate();
     return (
-        <div className="min-h-screen flex items-stretch font-sans bg-slate-50 overflow-hidden">
-
-            {/* LEFT PANEL (Dark Blue Theme with Yellow/Cyan Accents) */}
-            <div className="hidden lg:flex w-[45%] bg-blue-950 p-12 flex-col justify-between relative overflow-hidden text-white">
-                {/* Decorative Elements */}
-                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-yellow-400/10 blur-3xl pointer-events-none" />
-
-                <div className="relative z-10">
-                    <a href="/" className="flex items-center gap-3 text-white no-underline mb-16">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
-                        </div>
-                        <span className="font-bold text-xl tracking-tight">HealthBridge</span>
-                    </a>
-
-                    <div className="mb-8">
-                        <span className="inline-block bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 text-xs font-bold tracking-widest px-3 py-1.5 rounded-full mb-5 uppercase">
-                            Admin Portal
-                        </span>
-                        <h2 className="text-4xl lg:text-5xl font-bold leading-tight mb-4 font-poppins">
-                            Operate better,<br/>
-                            <span className="text-cyan-400 italic">manage operations.</span>
-                        </h2>
-                        <p className="text-blue-200 text-base leading-relaxed max-w-sm">
-                            Admin dashboard to oversee hospitals, staff, ambulance tracking and system settings.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="relative z-10">
-                    {[
-                        { icon: "🏥", title: "Facility Overview", desc: "Monitor hospital performance and metrics." },
-                        { icon: "👥", title: "Staff Management", desc: "Add/remove staff, assign roles and permissions." },
-                        { icon: "🚑", title: "Ambulance Tracking", desc: "Real-time fleet visibility and dispatch." }
-                    ].map((f, i) => (
-                        <div key={i} className="flex items-start gap-4 py-4 border-b border-white/10 last:border-none">
-                            <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl shrink-0">{f.icon}</div>
-                            <div>
-                                <div className="font-semibold text-[15px] text-white mb-1">{f.title}</div>
-                                <div className="text-[13px] text-blue-200">{f.desc}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="mt-10 p-5 bg-white/5 rounded-2xl border border-white/10 relative z-10">
-                    <div className="flex gap-3 items-center">
-                        <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-lg">📊</div>
-                        <div>
-                            <div className="text-white text-sm font-semibold mb-0.5">"Trusted by hospital admins."</div>
-                            <div className="text-blue-200 text-xs">Admin Team, City Hospital</div>
-                        </div>
+        <div className="min-h-screen flex items-center justify-center font-sans overflow-hidden bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 pt-24">
+            {/* Full-width top navbar matching HomePage style */}
+            <div className="fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300">
+                <div className="max-w-6xl mx-auto w-full">
+                    <div className="w-full">
+                        <button onClick={() => navigate('/PortalSelection')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4">
+                            <ArrowLeft className="w-5 h-5 mr-2" /> Back to Portal selection
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* RIGHT PANEL — FORM (Light Theme) */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 animate-fade-in bg-white">
-                <div className="w-full max-w-md">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-blue-950 mb-2 font-poppins">Welcome back</h1>
-                        <p className="text-slate-500 text-sm">Sign in to your admin account</p>
+            <div className="w-full max-w-md py-6 mx-auto">
+                <div className="bg-white rounded-3xl shadow-2xl p-8">
+                    <div className="text-center mb-6">
+                        <div className="w-15 h-15 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl mx-auto`}>🏥</div>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
+                        <p className="text-sm text-gray-500">Sign in to your admin account</p>
                     </div>
 
-                    {/* TABS */}
-                    <div className="flex border-b border-slate-200 mb-8">
-                        <button className={`flex-1 pb-3 text-sm font-semibold transition-all border-b-2 ${tab === "login" ? "text-blue-600 border-blue-600" : "text-slate-400 border-transparent hover:text-slate-600"}`} onClick={() => setTab("login")}>Sign In</button>
-                        <button className={`flex-1 pb-3 text-sm font-semibold transition-all border-b-2 ${tab === "register" ? "text-blue-600 border-blue-600" : "text-slate-400 border-transparent hover:text-slate-600"}`} onClick={() => setTab("register")}>Create Account</button>
+                    <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
+                        <button onClick={() => setTab('login')} className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all ${tab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'}`}>
+                            <LogInIcon className="w-4 h-4" />
+                            <span>Login</span>
+                        </button>
+                        <button onClick={() => setTab('register')} className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all ${tab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'}`}>
+                            <UserPlusIcon className="w-4 h-4" />
+                            <span>Register</span>
+                        </button>
                     </div>
 
-                    {/* Form fields */}
-                    <div className="flex flex-col gap-4">
-                        {tab === "register" && (
+                    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                        {tab === 'register' && (
                             <div>
-                                <label className="block text-slate-700 text-[13px] font-semibold mb-1.5">Full Name</label>
-                                <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Name" />
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <div className="relative">
+                                    <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input name="fullName" placeholder="Your full name" className="w-full pl-12 pr-4 py-3 border rounded-xl" />
+                                </div>
                             </div>
                         )}
+
                         <div>
-                            <label className="block text-slate-700 text-[13px] font-semibold mb-1.5">Email Address</label>
-                            <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" type="email" placeholder="admin@hospital.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                        </div>
-                        <div>
-                            <div className="flex justify-between mb-1.5">
-                                <label className="text-slate-700 text-[13px] font-semibold">Password</label>
-                                {tab === "login" && <a href="#" className="text-blue-600 text-[13px] hover:underline">Forgot password?</a>}
-                            </div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                             <div className="relative">
-                                <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all pr-12" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-                                <button onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 text-lg">
-                                    {showPass ? "👁" : "🔒"}
-                                </button>
+                                <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input name="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} type="email" placeholder="admin@hospital.com" className="w-full pl-12 pr-4 py-3 border rounded-xl" />
                             </div>
                         </div>
-                        {tab === "login" && (
-                            <div className="flex items-center gap-2 mt-1">
-                                <input type="checkbox" id="remember" className="w-4 h-4 accent-blue-600 rounded cursor-pointer" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} />
-                                <label htmlFor="remember" className="text-slate-500 text-sm cursor-pointer">Remember me for 30 days</label>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div className="relative">
+                                <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input name="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} type={showPass ? 'text' : 'password'} placeholder="••••••••" className="w-full pl-12 pr-12 py-3 border rounded-xl" />
+                                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">{showPass ? 'Hide' : 'Show'}</button>
                             </div>
-                        )}
-                    </div>
+                        </div>
 
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[15px] py-3.5 rounded-xl mt-8 transition-all shadow-md shadow-blue-600/20 disabled:opacity-70" onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Signing in..." : tab === "login" ? "Sign In to Admin Portal →" : "Create Admin Account →"}
-                    </button>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <input id="remember" type="checkbox" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} className="w-4 h-4 accent-blue-600" />
+                                <label htmlFor="remember" className="text-sm text-gray-500">Remember me for 30 days</label>
+                            </div>
+                            {tab === 'login' && <a href="#" className="text-sm text-blue-600">Forgot password?</a>}
+                        </div>
 
-                    {/* Restored Emergency Banner */}
-                    <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+                        <button type="submit" className="w-full py-4 bg-blue-900 text-white rounded-xl font-semibold">{loading ? 'Signing in...' : (tab === 'login' ? 'Sign In to Admin Portal' : 'Create Admin Account')}</button>
+
+                        <div className="text-center text-sm text-gray-500 mt-2">
+                            {tab === 'login' ? (
+                                <span>Don't have an account? <button type="button" onClick={() => setTab('register')} className="text-blue-900 font-semibold">Create one</button></span>
+                            ) : (
+                                <span>Already have an account? <button type="button" onClick={() => setTab('login')} className="text-blue-900 font-semibold">Sign in</button></span>
+                            )}
+                        </div>
+                    </form>
+
+                    <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
                         <span className="text-2xl">🚨</span>
                         <div>
-                            <div className="text-red-600 text-[13px] font-bold mb-0.5">Medical Emergency?</div>
-                            <div className="text-slate-600 text-xs">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
+                            <div className="text-red-600 text-sm font-bold">Medical Emergency?</div>
+                            <div className="text-sm text-gray-600">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
                         </div>
                     </div>
 
-                    <p className="text-center mt-8 text-slate-500 text-xs">
-                        Not an admin? <a href="/UserLogin" className="text-cyan-600 font-semibold hover:underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 font-semibold hover:underline">Doctor Login</a>
-                    </p>
+                    <p className="text-center mt-6 text-sm text-gray-500">Not an admin? <a href="/UserLogin" className="text-cyan-600 hover:text-decoration-underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 hover:text-decoration-underline transition-all">Doctor Login</a></p>
                 </div>
             </div>
         </div>

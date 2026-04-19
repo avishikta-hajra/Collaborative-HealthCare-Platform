@@ -1,137 +1,167 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PortalSelection from './PortalSelection';
 
-
-const stats = [
-    { value: "50K+", label: "Patients Served" },
-    { value: "1,200+", label: "Verified Doctors" },
-    { value: "340+", label: "Partner Hospitals" },
-    { value: "99.8%", label: "Uptime" },
-];
+// Using Lucide React
+import {
+    Menu, X, Video, Hospital,
+    Ambulance, AlertTriangle, Activity, Landmark, ChevronRight
+} from "lucide-react";
 
 const features = [
     {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
-                <path d="M15 10l4.553-2.069A1 1 0 0121 8.87V15.13a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-        ),
-        title: "Telemedicine & Video Consultation",
+        icon: <Video className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
+        title: "Telemedicine & Video",
         desc: "Connect face-to-face with certified doctors from anywhere. HD video calls, e-prescriptions, and follow-up scheduling — all in one place.",
-        accent: "text-[#00C9A7]",
-        bgAccent: "bg-[#00C9A7]/15",
+        route: "/telemedicine"
     },
     {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-        ),
-        title: "Hospital & Ambulance Tracking",
-        desc: "Real-time geolocation of nearby hospitals, live ambulance tracking, and one-tap emergency calling when every second counts.",
-        accent: "text-[#FF6B6B]",
-        bgAccent: "bg-[#FF6B6B]/15",
+        icon: <Hospital className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
+        title: "Locating Nearby Hospitals",
+        desc: "Instantly find and navigate to the nearest healthcare facilities. View ratings, specialties, and precise geolocation for quick access.",
+        route: "/hospitals"
     },
     {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
-                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-        ),
+        icon: <Ambulance className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
+        title: "Live Ambulance Tracking",
+        desc: "Request emergency transport with one tap. Track your assigned ambulance's real-time location and ETA straight to your doorstep.",
+        route: "/ambulance"
+    },
+    {
+        icon: <AlertTriangle className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
         title: "Community Health Reporting",
         desc: "Crowdsourced outbreak detection and health incident reporting. Empower communities to flag risks and receive timely alerts.",
-        accent: "text-[#845EF7]",
-        bgAccent: "bg-[#845EF7]/15",
+        route: "/community-health"
     },
-];
-
-const howItWorks = [
-    { step: "01", title: "Create Your Profile", desc: "Sign up as a patient, doctor, or hospital admin in under 2 minutes." },
-    { step: "02", title: "Access Services", desc: "Book video consultations, find nearby care, or monitor community health." },
-    { step: "03", title: "Stay Connected", desc: "Receive real-time updates, reminders, and health alerts on any device." },
+    {
+        icon: <Activity className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
+        title: "Live Listings & Availability",
+        desc: "Check real-time availability of hospital beds, oxygen cylinders, blood banks, and critical care units before you arrive.",
+        route: "/listings"
+    },
+    {
+        icon: <Landmark className="w-7 h-7 text-cyan-500" strokeWidth={2} />,
+        title: "Government Schemes",
+        desc: "Easily discover, check eligibility, and apply for central and state government healthcare programs and financial aid.",
+        route: "/schemes"
+    },
 ];
 
 export default function HomePage() {
     const [scrolled, setScrolled] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false); {/* Added state to manage sidebar visibility */ }
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [phraseIndex, setPhraseIndex] = useState(0); // State for the text carousel
     const navigate = useNavigate();
-    // Sidebar navigation items (site functions) (Newly added for responsive sidebar)
+
     const sidebarItems = [
         { label: "Features", route: "#features" },
-        { label: "How It Works", route: "#how-it-works" },
         { label: "Telemedicine", route: "/telemedicine" },
-        { label: "Hospitals & Ambulances", route: "/hospitals" },
+        { label: "Nearby Hospitals", route: "/hospitals" },
+        { label: "Ambulance Tracking", route: "/ambulance" },
+        { label: "Community Reporting", route: "/community-health" },
+        { label: "Live Listings", route: "/listings" },
+        { label: "Government Schemes", route: "/schemes" },
+        { label: "Gamified Module", route: "/gamification" },
+
+        /*
         { label: "Patient Portal", route: "/UserLogin" },
         { label: "Doctor Portal", route: "/DoctorLogin" },
         { label: "Hospital / Admin", route: "/AdminLogin" },
         { label: "Contact", route: "/contact" },
-        { label: "Privacy", route: "/privacy" },
-        { label: "Terms", route: "/terms" },
+        */
     ];
 
+    // Carousel Phrases
+    const heroPhrases = [
+        "Healthcare Ecosystem",
+        "Telemedicine Platform",
+        "Emergency Network",
+        "Health Companion"
+    ];
+
+    // Handle Scroll
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40);
         window.addEventListener("scroll", onScroll);
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    return (
-        <div className="min-h-screen">
-            {/* NAV  (With some modification)*/}
-            <nav className={`bg-white fixed top-0 left-0 right-0 z-40 md:px-10 lg:px-20 h-16 flex items-center justify-between transition-all duration-300 ${scrolled ? "backdrop-blur-xl border-b border-black/5" : "bg-transparent"}`}>
-                <button
-                    onClick={() => setSidebarOpen(true)}
-                    aria-label="Open menu"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-md text-black/80 hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-[#00C9A7] z-50">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
-                <div className="flex items-center gap-4 ml-12">
-                    <span className="font-bold text-lg text-black tracking-tight">HealthBridge</span>
-                </div>
+    // Handle Text Carousel Interval
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPhraseIndex((prev) => (prev + 1) % heroPhrases.length);
+        }, 3000); // Changes every 3 seconds
+        return () => clearInterval(interval);
+    }, []);
 
-                {/* Responsive links & sidebar toggle */}
-                <div className="flex items-center">
-                    <div className="hidden lg:flex items-center gap-8">
-                        <a onClick={() => navigate('/')} className="cursor-pointer text-black/80 text-sm font-medium">Home</a>
-                        <a onClick={() => navigate('/about')} className="cursor-pointer text-black/80 text-sm font-medium">About Us</a>
+    return (
+        <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950">
+            <nav className={`fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-[72px] flex items-center justify-between transition-all duration-300 ${scrolled ? "bg-blue-100/85 backdrop-blur-md shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300" : "bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300"}`}>
+
+                {/* Left Side: Logo & Links */}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                        {/* Sidebar Toggle */}
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 rounded-lg text-blue-950 hover:bg-blue-50 transition-colors cursor-pointer"
+                            aria-label="Open menu">
+                            <Menu className="w-6 h-6" />
+                        </button>
+
+                        <span className="cursor-pointer flex items-center" onClick={() => navigate('/')}>
+                            <img
+                                src="/HealthBridgeLogo.png"
+                                alt="HealthBridge Logo"
+                                // Changed to h-10 w-auto (or try h-12 for even bigger)
+                                className="h-32 sm:h-28 w-auto object-contain"
+                            />
+                        </span>
                     </div>
 
+                    {/* Desktop Links */}
+                    <div className="hidden lg:flex items-center gap-8 border-l-2 border-slate-400 pl-10 h-8">
+                        <a onClick={() => navigate('/')} className="cursor-pointer text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors">Home</a>
+                        <a onClick={() => navigate('/about')} className="cursor-pointer text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors">About Us</a>
+                    </div>
                 </div>
 
-                <div className="flex gap-3">
-                    <button className="hidden sm:block px-5 py-2 text-sm font-medium text-white bg-transparent border-[1.5px] border-white/20 rounded-lg hover:border-white/50 hover:bg-white/5 transition-all">Sign In</button>
-                    <button className="px-5 py-2 text-sm font-semibold text-white bg-linear-to-br from-[#00C9A7] to-[#0099FF] rounded-lg hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,201,167,0.35)] transition-all" onClick={() => navigate('/PortalSelection')}>Login or Sign Up</button>
+                {/* Right Side: Actions */}
+                <div className="flex items-center gap-4">
+                    <button className="px-5 py-2.5 text-[14px] font-semibold tracking-widest text-white bg-blue-950 rounded-lg hover:bg-blue-800 hover:shadow-lg hover:shadow-blue-900/30 transition-all cursor-pointer" onClick={() => navigate('/PortalSelection')}>
+                        Sign In
+                    </button>
                 </div>
             </nav>
-            {/*NEWLY ADDED - TOGGLABLE SIDEBAR (RESPONSIVE FOR ALL DEVICES) */}
-            {/* Sidebar overlay */}
+
+            {/* SIDEBAR DRAWER */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 flex">
-                    <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-                    <aside className="absolute left-0 top-0 w-72 max-w-full h-full bg-white/95 backdrop-blur-md p-6 shadow-xl">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="font-bold text-lg">Menu</div>
-                            <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="p-2 rounded-md text-black/70 hover:bg-black/5 focus:outline-none">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M6 6l12 12M6 18L18 6" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                    <div className="absolute inset-0 bg-blue-950/30 backdrop-blur-xs transition-opacity" onClick={() => setSidebarOpen(false)} />
+                    <aside className="absolute left-0 top-0 w-72 max-w-[80vw] h-full bg-gradient-to-tl from-cyan-50 to-blue-200 p-6 shadow-2xl flex flex-col">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="font-poppins font-bold text-2xl text-sky-800 flex items-center gap-2">
+                                HealthBridge
+                            </div>
+                            <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-md text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <nav className="flex flex-col gap-4">
+                        <nav className="flex flex-col gap-1 overflow-y-auto">
                             {sidebarItems.map((item) => (
                                 <button
                                     key={item.label}
                                     onClick={() => {
                                         setSidebarOpen(false);
-                                        if (item.route && item.route.startsWith('/')) navigate(item.route);
-                                        else if (item.route && item.route.startsWith('#')) window.location.hash = item.route;
+                                        if (item.route.startsWith('/')) navigate(item.route);
+                                        else {
+                                            const element = document.querySelector(item.route);
+                                            if(element) element.scrollIntoView({behavior: 'smooth'});
+                                        }
                                     }}
-                                    className="text-left text-black/80 text-base font-medium p-2 rounded hover:bg-black/5"
+                                    className="text-left flex items-center justify-between text-slate-600 text-l font-medium p-3 rounded-lg hover:bg-blue-50 hover:text-blue-900 transition-colors cursor-pointer group"
                                 >
                                     {item.label}
+                                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-blue-500 transition-colors" />
                                 </button>
                             ))}
                         </nav>
@@ -139,76 +169,60 @@ export default function HomePage() {
                 </div>
             )}
 
-            {/* HERO */}
-            <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 md:px-10 lg:px-20 pt-32 pb-20 relative overflow-hidden">
-                {/* Background effects */}
-                <div className="absolute top-[15%] left-[10%] w-500px h-500px rounded-full bg-[radial-gradient(circle,rgba(0,201,167,0.08)_0%,transparent_70%)] blur-40px pointer-events-none" />
-                <div className="absolute bottom-[10%] right-[5%] w-600px h-600px rounded-full bg-[radial-gradient(circle,rgba(132,94,247,0.07)_0%,transparent_70%)] blur-[50px] pointer-events-none" />
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-size:60px_60px pointer-events-none" />
+           {/* HERO WITH BRIGHT COLORFUL BACKGROUND */}
+                      <section className="relative pt-30 pb-6 px-4 flex flex-col items-center justify-center bg-slate-50 text-center overflow-hidden">
+                         <div className="relative max-w-4xl animate-fade-in z-10 w-full flex flex-col items-center">
 
-                <div className="max-w-3xl animate-fade-up z-10">
-                    <span className="inline-block bg-[#00C9A7]/10 text-[#00C9A7] text-xs font-semibold tracking-wider px-4 py-1.5 rounded-full border border-[#00C9A7]/25 mb-6">🏥 Healthcare, Reimagined</span>
-                    <h1 className="font-serif-display text-4xl sm:text-5xl md:text-7xl leading-[1.1] mb-6">
-                        Your Complete<br />
-                        <span className="bg-linear-to-r from-[#00C9A7] via-[#0099FF] to-[#845EF7] bg-clip-text text-transparent animate-gradient-shift">Healthcare Ecosystem</span>
-                    </h1>
-                    <p className="text-[#94A3C0] text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-10">
-                        Telemedicine consultations, real-time hospital & ambulance tracking, and community health reporting — unified in one powerful platform.
-                    </p>
-                    <div className="flex flex-wrap gap-4 justify-center">
-                        <button
-                            className="px-8 py-4 text-base font-semibold text-white bg-linear-to-br from-[#00C9A7] to-[#0099FF] rounded-xl hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,201,167,0.35)] transition-all">Start for Free →</button>
-                        <button className="bg-orange-400 px-8 py-4 text-base font-medium text-white border-[1.5px] border-white/20 rounded-xl hover:border-white/50 hover:-translate-y-1 hover:bg-orange-300 transition-all">Watch Demo</button>
-                    </div>
-                </div>
+                             {/* Your exact original H1 classes */}
+                             <h1 className="font-poppins text-xl sm:text-3xl md:text-4xl lg:text-4xl font-semibold text-blue-950 leading-normal mb-4 tracking-tight flex flex-row flex-nowrap items-center justify-center gap-1.5 sm:gap-3 w-full">
+                                 <span className="whitespace-nowrap">Your Complete</span>
 
-                <div className="mt-20 flex gap-5 justify-center flex-wrap z-10">
-                    {[
-                        { icon: "📹", label: "Video Consult", sub: "Dr. Mehta — Online", color: "text-[#00C9A7]", bg: "bg-[#00C9A7]/10", delay: "0s" },
-                        { icon: "🚑", label: "Ambulance ETA", sub: "4 min away", color: "text-[#FF6B6B]", bg: "bg-[#FF6B6B]/10", delay: "-1.5s" },
-                        { icon: "⚠️", label: "Alert: Dengue", sub: "Kolkata South Zone", color: "text-[#845EF7]", bg: "bg-[#845EF7]/10", delay: "-3s" },
-                    ].map((c, i) => (
-                        <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3.5 min-w-50 animate-float backdrop-blur-sm" style={{ animationDelay: c.delay, animationDuration: `${3 + i * 0.4}s` }}>
-                            <div className={`w-11 h-11 rounded-xl ${c.bg} flex items-center justify-center text-xl`}>{c.icon}</div>
-                            <div className="text-left">
-                                <div className={`font-semibold text-sm ${c.color}`}>{c.label}</div>
-                                <div className="text-xs text-[#94A3C0] mt-0.5">{c.sub}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                                 {/* CSS Grid trick replacing the fixed widths */}
+                                 <span className="relative inline-grid grid-cols-1 grid-rows-1 text-left items-center">
 
-            {/* STATS */}
-            <section className="px-4 md:px-10 lg:px-20 pb-24">
-                <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                    {stats.map((s, i) => (
-                        <div key={i} className={`p-8 text-center ${i % 2 !== 0 ? '' : 'border-r border-white/10'} ${i < 2 ? 'border-b md:border-b-0 border-white/10' : ''} md:border-r md:last:border-r-0`}>
-                            <div className="text-3xl md:text-4xl font-extrabold tracking-tight mb-1.5 bg-linear-to-br from-[#00C9A7] to-[#0099FF] bg-clip-text text-transparent">{s.value}</div>
-                            <div className="text-[#94A3C0] text-sm font-medium">{s.label}</div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                                     {/* Invisible placeholder of the longest phrase to maintain perfect centering width */}
+                                     <span className="invisible col-start-1 row-start-1 whitespace-nowrap">
+                                         Telemedicine Platform
+                                     </span>
 
-            {/* FEATURES */}
-            <section className="px-4 md:px-10 lg:px-20 pb-28">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-16 z-10 relative">
-                        <span className="inline-block bg-[#00C9A7]/10 text-[#00C9A7] text-xs font-semibold tracking-wider px-4 py-1.5 rounded-full border border-[#00C9A7]/25 mb-4">Core Features</span>
-                        <h2 className="font-serif-display text-3xl md:text-5xl">Everything You Need,<br /><span className="bg-linear-to-r from-[#00C9A7] via-[#0099FF] to-[#845EF7] bg-clip-text text-transparent animate-gradient-shift">All in One Place</span></h2>
+                                     {/* Visible animated text */}
+                                     <span
+                                       key={phraseIndex}
+                                       className="col-start-1 row-start-1 flex items-center h-full bg-clip-text text-transparent bg-gradient-to-r from-indigo-800 to-cyan-700 animate-fade-up drop-shadow-sm whitespace-nowrap"
+                                     >
+                                       {heroPhrases[phraseIndex]}
+                                     </span>
+                                 </span>
+                             </h1>
+
+                             {/* Your exact original paragraph classes */}
+                             <p className="text-slate-600 text-[18px] md:text-[18px] justify-center text-center leading-relaxed max-w-2xl mx-auto mb-5">
+                                 Supporting Every Patient with Timely, Compassionate, and Well-Coordinated Care
+                             </p>
+                         </div>
+                      </section>
+
+            {/* FEATURES - Divider & Cyan Highlight Accents */}
+            <section className="relative bg-white px-4 md:px-10 lg:px-10 py-12 bg-gradient-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 border-bold border-blue-300" id="features">
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <div className="text-center mb-10">
+                        <h2 className="font-poppins text-2xl md:text-2xl font-bold text-blue-950 tracking-widest mb-3">Everything You Need,<span className="text-blue-900"> All in One Place</span></h2>
+                        <span className="inline-block text-cyan-700 text-xl font-bold tracking-widest uppercase">Core Features</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         {features.map((f, i) => (
-                            <div key={i} className="bg-white/5 border border-white/10 rounded-[18px] p-8 hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
-                                <div className={`w-14 h-14 rounded-xl ${f.bgAccent} flex items-center justify-center ${f.accent} mb-6`}>{f.icon}</div>
-                                <h3 className="text-xl font-bold mb-3">{f.title}</h3>
-                                <p className="text-[#94A3C0] text-[15px] leading-relaxed mb-7">{f.desc}</p>
-                                <div
-                                    onClick={() => navigate('/telemedicine')}
-                                    className={`flex items-center gap-1.5 ${f.accent} text-sm font-semibold cursor-pointer group`}>
-                                    Learn more <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <div key={i} className="bg-white border border-sky-700 border-2 rounded-[24px] p-8 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 border-2 transition-all duration-300 flex flex-col items-center text-center h-full group">
+                                {/* Centered Icon with Glowing Cyan Dropshadow */}
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center mb-6 shadow-inner shadow-white border-2 border-cyan-700/80 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
+                                    {f.icon}
+                                </div>
+                                <h3 className="text-[18px] font-bold text-sky-950 mb-3">{f.title}</h3>
+                                <p className="text-slate-500 text-[14px] leading-relaxed mb-6 flex-grow">{f.desc}</p>
+
+                                <div onClick={() => navigate(f.route)} className="flex items-center gap-1.5 text-blue-800 text-[16px] font-bold cursor-pointer hover:text-blue-950 transition-colors">
+                                    Access Now
+                                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </div>
                             </div>
                         ))}
@@ -216,40 +230,18 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* HOW IT WORKS */}
-            <section className="px-4 md:px-10 lg:px-20 py-24 bg-white/1.5 border-y border-white/5">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-16">
-                        <span className="inline-block bg-[#0099FF]/10 text-[#0099FF] text-xs font-semibold tracking-wider px-4 py-1.5 rounded-full border border-[#0099FF]/25 mb-4">Process</span>
-                        <h2 className="font-serif-display text-3xl md:text-5xl">Get Started in <span className="bg-linear-to-r from-[#00C9A7] via-[#0099FF] to-[#845EF7] bg-clip-text text-transparent animate-gradient-shift">3 Easy Steps</span></h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {howItWorks.map((h, i) => (
-                            <div key={i} className="text-center p-6">
-                                <div className="font-serif-display text-7xl text-white/5 leading-none -mb-4 italic">{h.step}</div>
-                                <div className="w-14 h-14 rounded-xl bg-linear-to-br from-[#00C9A7]/20 to-[#0099FF]/20 border border-[#00C9A7]/30 flex items-center justify-center mx-auto mb-5 text-xl font-extrabold text-[#00C9A7]">{i + 1}</div>
-                                <h3 className="text-xl font-bold mb-2.5">{h.title}</h3>
-                                <p className="text-[#94A3C0] text-[15px] leading-relaxed">{h.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/*REMOVED LOGIN PORTALS FROM HERE AND MADE DIFFERENT JSX FILE*/}
-
             {/* FOOTER */}
-            <footer className="border-t border-white/5 px-4 md:px-10 lg:px-20 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-linear-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center">
-                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" /></svg>
+            <footer className="px-4 md:px-10 lg:px-20 py-5 bg-slate-50 flex flex-col md:flex-row items-center justify-between gap-6 border-t-2 border-blue-300">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                    <div className="w-8 h-8 rounded-lg bg-blue-950 flex items-center justify-center">
+                        <Activity className="w-4 h-4 text-white" strokeWidth={2.5} />
                     </div>
-                    <span className="font-bold text-base">HealthBridge</span>
+                    <span className="font-bold text-blue-950 text-[15px]">HealthBridge</span>
                 </div>
-                <p className="text-[#94A3C0] text-sm text-center">© 2026 HealthBridge. Built with care for better health outcomes.</p>
-                <div className="flex gap-5">
+                <p className="text-slate-500 text-[13px] text-center">© 2026 HealthBridge. Built with care for better health outcomes.</p>
+                <div className="flex gap-6">
                     {["Privacy", "Terms", "Contact"].map(l => (
-                        <a key={l} href="#" className="text-[#94A3C0] text-sm hover:text-white transition-colors">{l}</a>
+                        <a key={l} href="#" className="text-slate-500 text-[13px] font-medium hover:text-cyan-600 transition-colors">{l}</a>
                     ))}
                 </div>
             </footer>

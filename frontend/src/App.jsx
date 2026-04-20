@@ -5,7 +5,8 @@ import UserLogin from "./components/UserLogin";
 import DoctorLogin from "./components/DoctorLogin";
 import AdminLogin from "./components/AdminLogin";
 import PortalSelection from "./components/PortalSelection"; // Newly added for portal selection page
-
+import Hospitals from "./components/Hospitals";
+import AmbulanceService from "./components/AmbulanceService";
 export default function App() {
   return (
     <Router>
@@ -17,6 +18,8 @@ export default function App() {
         <Route path="/AdminLogin" element={<AdminLogin />} />
         // Newly added route for portal selection page
         <Route path="/PortalSelection" element={<PortalSelection />} />
+        <Route path="/hospitals" element={<Hospitals/>}/>
+        <Route path="/ambulance" element={<AmbulanceService />} />
       </Routes>
     </Router>
   );

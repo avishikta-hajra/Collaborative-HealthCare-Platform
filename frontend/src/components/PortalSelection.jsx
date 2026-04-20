@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User, Stethoscope, Shield } from 'lucide-react';
 
 export default function PortalSelection() {
     const navigate = useNavigate();
@@ -25,12 +25,12 @@ export default function PortalSelection() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     {[
-                        { icon: "👤", label: "Patient", route: "/UserLogin", sub: "Book consultations & track health", color: "text-blue-600", bg: "bg-blue-100", btn: "bg-blue-600" },
-                        { icon: "🩺", label: "Doctor", route: "/DoctorLogin", sub: "Manage appointments & calls", color: "text-cyan-600", bg: "bg-cyan-100", btn: "bg-cyan-500" },
-                        { icon: "🏥", label: "Admin", route: "/AdminLogin", sub: "Oversee operations & staff", color: "text-blue-900", bg: "bg-slate-200", btn: "bg-blue-900" },
+                        { icon: <User className="w-8 h-8 text-white" />, label: "Patient", route: "/UserLogin", sub: "Book consultations & track health", color: "text-blue-600", bg: "bg-blue-600", btn: "bg-blue-600" },
+                        { icon: <Stethoscope className="w-8 h-8 text-white" />, label: "Doctor", route: "/DoctorLogin", sub: "Manage appointments & calls", color: "text-cyan-600", bg: "bg-cyan-500", btn: "bg-cyan-500" },
+                        { icon: <Shield className="w-8 h-8 text-white" />, label: "Admin", route: "/AdminLogin", sub: "Oversee operations & staff", color: "text-blue-900", bg: "bg-blue-900", btn: "bg-blue-900" },
                     ].map((p, i) => (
                         <div key={i} className="bg-white border-sky-700 border-2 rounded-3xl p-8 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 flex flex-col items-center text-center h-full group">
-                            <div className={`w-16 h-16 rounded-2xl ${p.bg} flex items-center justify-center mb-6 shadow-inner shadow-white border-2 border-cyan-700/80 group-hover:scale-110 transition-all duration-300`}>{p.icon}</div>
+                            <div className={`w-16 h-16 rounded-2xl ${p.bg} flex items-center justify-center mb-6  group-hover:scale-110 transition-all duration-300`}>{p.icon}</div>
                             <h3 className={`text-lg font-bold mb-1 ${p.color}`}>{p.label}</h3>
                             <p className="text-slate-500 text-sm leading-relaxed mb-6 flex-1">{p.sub}</p>
                             <button onClick={() => navigate(p.route)} className={`mt-4 w-full text-white font-semibold text-sm py-3 rounded-lg transition-colors ${p.btn} hover:opacity-90`}>Sign In →</button>

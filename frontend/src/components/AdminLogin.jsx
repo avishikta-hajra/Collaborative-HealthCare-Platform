@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, LogIn as LogInIcon, UserPlus as UserPlusIcon, Shield } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
@@ -29,8 +29,8 @@ export default function AdminLogin() {
             <div className="w-full max-w-md py-6 mx-auto">
                 <div className="bg-white rounded-3xl shadow-2xl p-8">
                     <div className="text-center mb-6">
-                        <div className="w-15 h-15 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl mx-auto`}>🏥</div>
+                        <div className="w-16 h-16 bg-blue-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Shield className="w-8 h-8 text-white" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
                         <p className="text-sm text-gray-500">Sign in to your admin account</p>
@@ -93,16 +93,16 @@ export default function AdminLogin() {
                             )}
                         </div>
                     </form>
-
-                    <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+                    {/* REMOVED */}
+                    {/* <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
                         <span className="text-2xl">🚨</span>
                         <div>
                             <div className="text-red-600 text-sm font-bold">Medical Emergency?</div>
                             <div className="text-sm text-gray-600">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
                         </div>
-                    </div>
+                    </div> */}
 
-                    <p className="text-center mt-6 text-sm text-gray-500">Not an admin? <a href="/UserLogin" className="text-cyan-600 hover:text-decoration-underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 hover:text-decoration-underline transition-all">Doctor Login</a></p>
+                    {/* <p className="text-center mt-6 text-sm text-gray-500">Not an admin? <a href="/UserLogin" className="text-cyan-600 hover:text-decoration-underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 hover:text-decoration-underline transition-all">Doctor Login</a></p> */}
                 </div>
             </div>
         </div>

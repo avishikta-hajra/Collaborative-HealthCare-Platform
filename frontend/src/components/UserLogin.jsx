@@ -101,16 +101,16 @@ export default function UserLogin() {
                             )}
                         </div>
                     </form>
-
-                    <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+                    {/* REMOVED */}
+                    {/* <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
                         <span className="text-2xl">🚨</span>
                         <div>
                             <div className="text-red-600 text-sm font-bold">Medical Emergency?</div>
                             <div className="text-sm text-gray-600">Call <strong className="text-red-600">112</strong> or use our emergency feature</div>
                         </div>
-                    </div>
+                    </div> */}
 
-                    <p className="text-center mt-6 text-sm text-gray-500">Not a patient? <a href="/DoctorLogin" className="text-cyan-600">Doctor Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p>
+                    {/* <p className="text-center mt-6 text-sm text-gray-500">Not a patient? <a href="/DoctorLogin" className="text-cyan-600">Doctor Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p> */}
                 </div>
             </div>
         </div>

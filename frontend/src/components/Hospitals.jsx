@@ -155,10 +155,10 @@ export default function Hospitals() {
     const mapQuery = encodeURIComponent(`${activeHospitalForMap.name}, ${activeHospitalForMap.city}, India`);
 
     return (
-        <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-linear-to-b from-cyan-50 via-indigo-50 to-blue-100 border-t-2 pt-24 pb-16">
+        <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-50 border-t-2 pt-24 pb-16 pl-10 pr-10">
             
             {/* Top Navbar */}
-            <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-50/90 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
+            <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
                 <div className="w-full">
                     <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer">
                         <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
@@ -170,11 +170,11 @@ export default function Hospitals() {
             <div className="w-full px-2 md:px-4">
                 
                 {/* Header Section */}
-                <div className="text-center mb-10">
+                <div className="text-center mt-8">
                     <h1 className="font-poppins text-3xl md:text-4xl font-bold text-blue-950 tracking-widest mb-3">
                         Locate <span className="text-blue-900">Healthcare Facilities</span>
                     </h1>
-                    <p className="text-slate-600 text-[18px] leading-relaxed max-w-2xl mx-auto mb-5">
+                    <p className="text-slate-600 text-[18px] leading-relaxed max-w-5xl mx-auto mb-6">
                         Find verified hospitals, monitor critical care bed availability, and generate immediate routing for emergency situations.
                     </p>
                 </div>
@@ -308,7 +308,7 @@ export default function Hospitals() {
 
                 {/* Hospital Grid - Strictly locked to 3 columns max */}
                 {filteredHospitals.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-8">
                         {filteredHospitals.map((hospital) => (
                             <div key={hospital.id} className="bg-white border-sky-700 border-2 rounded-2xl p-4 md:p-5 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 flex flex-col group">
                                 <div className="flex justify-between items-start mb-4">

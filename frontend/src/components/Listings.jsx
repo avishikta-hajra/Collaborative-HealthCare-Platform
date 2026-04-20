@@ -59,13 +59,11 @@ export default function Listings() {
 
     return (
         <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2">
-            <div className="fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300">
-                <div className="max-w-6xl mx-auto w-full">
-                    <div className="w-full flex items-center">
-                        <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4">
-                            <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
-                        </button>
-                    </div>
+            <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
+                <div className="w-full flex justify-between items-center">
+                    <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer">
+                        <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
+                    </button>
                 </div>
             </div>
 
@@ -101,7 +99,7 @@ export default function Listings() {
                                     <option value="blood">Selected Blood Group (desc)</option>
                                     <option value="distance">Distance (asc)</option>
                                 </select>
-                                
+
                             </div>
                         </div>
                     </div>

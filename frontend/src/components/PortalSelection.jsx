@@ -5,21 +5,20 @@ import { ArrowLeft, User, Stethoscope, Shield } from 'lucide-react';
 export default function PortalSelection() {
     const navigate = useNavigate();
     return (
-        <section className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-100 border-t-2 px-4 py-16 flex items-center justify-center pt-30">
-            <div className="max-w-4xl mx-auto w-full">
+        <section className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-50 border-t-2 pt-24 pb-16 pl-10 pr-10 flex flex-col">
+            {/* Top fixed navbar (Telemedicine style) */}
+            <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
+                <div className="w-full flex justify-between items-center">
+                    <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer">
+                        <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
+                    </button>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto w-full mt-6">
                 <div className="text-center mt-2 mb-10">
                     <h2 className="font-heading text-2xl md:text-4xl font-bold text-blue-950">Choose Your Access Portal</h2>
                     <p className="text-slate-600 text-sm mt-2 max-w-l mx-auto">Tailored dashboards for patients, medical professionals, and administrators.</p>
-                </div>
-                {/* Top fixed navbar styled like HomePage */}
-                <div className="fixed top-0 left-0 right-0 z-40 px-4 md:px-6 lg:px-14 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.2)] border-b-2 border-blue-300">
-                    <div className="max-w-6xl mx-auto w-full">
-                        <div className="w-full">
-                            <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4">
-                                <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

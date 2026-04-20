@@ -91,7 +91,22 @@ public class GlobalHandleApiException {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiError(403, "Forbidden", request.getRequestURI(), LocalDateTime.now()));
     }
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(
+            org.springframework.security.core.AuthenticationException ex,
+            HttpServletRequest request
+    ) {
+        ApiError error = new ApiError(
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
 
 
 }
+
 

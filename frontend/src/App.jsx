@@ -8,6 +8,7 @@ import PortalSelection from "./components/PortalSelection"; // Newly added for p
 import Hospitals from "./components/Hospitals";
 import AmbulanceService from "./components/AmbulanceService";
 import GovernmentSchemes from "./components/GovernmentSchemes";
+import Listings from "./components/Listings";
 export default function App() {
   return (
     <Router>
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/hospitals" element={<Hospitals/>}/>
         <Route path="/ambulance" element={<AmbulanceService />} />
         <Route path="/schemes" element={< GovernmentSchemes/>} />
+        <Route path="/listings" element={<Listings />} />
       </Routes>
     </Router>
   );

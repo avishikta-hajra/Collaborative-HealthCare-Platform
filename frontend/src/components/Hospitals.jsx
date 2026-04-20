@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    ArrowLeft, Search, MapPin, Star, Phone, 
+import {
+    ArrowLeft, Search, MapPin, Star, Phone,
     Clock, Activity, Navigation, Filter, Hospital, ShieldCheck,
     Map as MapIcon, Route, Car, Info, X
 } from "lucide-react";
 
 // Hardcoded India-based hospital data
-const hospitalsData = [
+export const hospitalsData = [
     {
         id: 1,
         name: "Apollo Multispeciality Hospitals",
@@ -102,7 +102,7 @@ const hospitalsData = [
 
 export default function Hospitals() {
     const navigate = useNavigate();
-    
+
     // Search & Filter State
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCity, setSelectedCity] = useState("All");
@@ -122,11 +122,11 @@ export default function Hospitals() {
     // Filter logic
     const filteredHospitals = useMemo(() => {
         return hospitalsData.filter(hospital => {
-            const matchesSearch = hospital.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  hospital.address.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = hospital.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                hospital.address.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCity = selectedCity === "All" || hospital.city === selectedCity;
             const matchesSpecialty = selectedSpecialty === "All" || hospital.specialties.includes(selectedSpecialty);
-            
+
             return matchesSearch && matchesCity && matchesSpecialty;
         });
     }, [searchQuery, selectedCity, selectedSpecialty]);
@@ -135,10 +135,10 @@ export default function Hospitals() {
     const handleGetRoute = (e) => {
         e.preventDefault();
         if (!userLocation || !selectedDestination) return;
-        
+
         setIsRouting(true);
         setRouteResult(null);
-        
+
         // Simulate API calculation delay
         setTimeout(() => {
             const destHospital = hospitalsData.find(h => h.name === selectedDestination);
@@ -156,7 +156,7 @@ export default function Hospitals() {
 
     return (
         <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-50 border-t-2 pt-24 pb-16 pl-10 pr-10">
-            
+
             {/* Top Navbar */}
             <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
                 <div className="w-full">
@@ -168,7 +168,7 @@ export default function Hospitals() {
 
             {/* Main Content Wrapper - Set to full width with zero visual side-spaces */}
             <div className="w-full px-2 md:px-4">
-                
+
                 {/* Header Section */}
                 <div className="text-center mt-8">
                     <h1 className="font-poppins text-3xl md:text-4xl font-bold text-blue-950 tracking-widest mb-3">
@@ -181,7 +181,7 @@ export default function Hospitals() {
 
                 {/* Map & Routing Section (Toggleable) */}
                 <div className="mb-4 flex justify-end">
-                    <button 
+                    <button
                         onClick={() => setShowMap(!showMap)}
                         className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-800 text-[14px] font-semibold rounded-lg border-sky-700 border-2 hover:bg-blue-50 transition-colors shadow-sm cursor-pointer"
                     >
@@ -193,12 +193,12 @@ export default function Hospitals() {
                     <div className="bg-white rounded-3xl shadow-xl border-sky-700 border-2 overflow-hidden mb-10 flex flex-col lg:flex-row h-auto lg:h-[420px]">
                         {/* Map iframe */}
                         <div className="w-full lg:w-2/3 h-[300px] lg:h-full bg-slate-100 relative">
-                            <iframe 
-                                width="100%" 
-                                height="100%" 
-                                style={{ border: 0 }} 
-                                loading="lazy" 
-                                allowFullScreen 
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                loading="lazy"
+                                allowFullScreen
                                 src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
                                 title="Hospital Location Map"
                             ></iframe>
@@ -216,12 +216,12 @@ export default function Hospitals() {
                                     <label className="block text-[12px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Starting Point</label>
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-500 w-5 h-5" />
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             required
                                             value={userLocation}
                                             onChange={(e) => setUserLocation(e.target.value)}
-                                            placeholder="Your current location" 
+                                            placeholder="Your current location"
                                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-[14px] transition-all shadow-sm"
                                         />
                                     </div>
@@ -231,7 +231,7 @@ export default function Hospitals() {
                                     <label className="block text-[12px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Destination</label>
                                     <div className="relative">
                                         <Hospital className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 w-5 h-5" />
-                                        <select 
+                                        <select
                                             value={selectedDestination}
                                             onChange={(e) => setSelectedDestination(e.target.value)}
                                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-[14px] truncate transition-all appearance-none shadow-sm cursor-pointer"
@@ -241,8 +241,8 @@ export default function Hospitals() {
                                     </div>
                                 </div>
 
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={isRouting}
                                     className="mt-3 w-full bg-blue-950 hover:bg-blue-800 text-white py-2.5 rounded-xl text-[15px] font-semibold tracking-widest transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                                 >
@@ -272,19 +272,19 @@ export default function Hospitals() {
                 <div className="bg-white rounded-3xl shadow-xl border-sky-700 border-2 p-4 mb-8 flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                        <input 
-                            type="text" 
-                            placeholder="Search hospitals or localities..." 
+                        <input
+                            type="text"
+                            placeholder="Search hospitals or localities..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-[14px] transition-all"
                         />
                     </div>
-                    
+
                     <div className="flex gap-4">
                         <div className="relative w-full md:w-48">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                            <select 
+                            <select
                                 value={selectedCity}
                                 onChange={(e) => setSelectedCity(e.target.value)}
                                 className="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer transition-all"
@@ -295,7 +295,7 @@ export default function Hospitals() {
 
                         <div className="relative w-full md:w-56">
                             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                            <select 
+                            <select
                                 value={selectedSpecialty}
                                 onChange={(e) => setSelectedSpecialty(e.target.value)}
                                 className="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer transition-all"
@@ -360,13 +360,13 @@ export default function Hospitals() {
                                     <button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-xl text-[13px] font-semibold tracking-wide transition-colors cursor-pointer">
                                         Book Appoinment
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setShowMap(true);
                                             setSelectedDestination(hospital.name);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className="p-2 bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-800 rounded-xl transition-colors cursor-pointer" 
+                                        className="p-2 bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-800 rounded-xl transition-colors cursor-pointer"
                                         title="Get Directions"
                                     >
                                         <Navigation className="w-4 h-4" />
@@ -385,8 +385,8 @@ export default function Hospitals() {
                         </div>
                         <h3 className="font-poppins text-2xl font-bold text-sky-950 mb-2">No facilities found</h3>
                         <p className="text-slate-500 text-[16px]">We couldn't find any hospitals matching your current filters.</p>
-                        <button 
-                            onClick={() => {setSearchQuery(""); setSelectedCity("All"); setSelectedSpecialty("All");}}
+                        <button
+                            onClick={() => { setSearchQuery(""); setSelectedCity("All"); setSelectedSpecialty("All"); }}
                             className="mt-6 text-cyan-600 text-[16px] font-bold hover:text-blue-900 transition-colors cursor-pointer"
                         >
                             Clear all filters

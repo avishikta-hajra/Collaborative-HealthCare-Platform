@@ -33,14 +33,17 @@ public class DriverProfile {
     private String licenseNumber;
 
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DriverAvailabilityStatus availabilityStatus = DriverAvailabilityStatus.OFFLINE;
 
+    @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private DriverStatus status = DriverStatus.PENDING;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 

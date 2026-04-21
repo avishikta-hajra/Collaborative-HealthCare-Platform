@@ -33,6 +33,7 @@ public class Ambulance {
 
     private Integer capacity;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AmbulanceStatus status = AmbulanceStatus.AVAILABLE;
@@ -46,6 +47,7 @@ public class Ambulance {
     @Column(nullable = false)
     private Instant currentLocationUpdatedAt;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 

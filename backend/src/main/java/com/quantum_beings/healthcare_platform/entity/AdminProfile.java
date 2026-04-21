@@ -36,6 +36,7 @@ public class AdminProfile {
     @Column(nullable = false, unique = true)
     private String employeeId;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 

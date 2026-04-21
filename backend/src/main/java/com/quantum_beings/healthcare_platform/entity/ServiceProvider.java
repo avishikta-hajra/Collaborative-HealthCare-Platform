@@ -43,6 +43,7 @@ public class ServiceProvider {
     @Column(nullable = false)
     private Double longitude;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 

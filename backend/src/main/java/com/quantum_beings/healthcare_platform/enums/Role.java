@@ -1,5 +1,5 @@
 package com.quantum_beings.healthcare_platform.enums;
 
 public enum Role {
-    ADMIN, USER, SERVICE, DRIVER
+    ADMIN, USER, DRIVER
 }

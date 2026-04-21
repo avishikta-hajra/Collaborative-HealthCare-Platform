@@ -108,7 +108,6 @@ export default function UserLogin() {
                         </div>
                     </div> */}
 
-                    {/* <p className="text-center mt-6 text-sm text-gray-500">Not a patient? <a href="/DoctorLogin" className="text-cyan-600">Doctor Login</a> · <a href="/AdminLogin" className="text-blue-600">Admin Login</a></p> */}
                 </div>
             </div>
         </div>

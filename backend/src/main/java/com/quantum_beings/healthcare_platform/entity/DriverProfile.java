@@ -1,5 +1,6 @@
 package com.quantum_beings.healthcare_platform.entity;
 import com.quantum_beings.healthcare_platform.enums.DriverAvailabilityStatus;
+import com.quantum_beings.healthcare_platform.enums.DriverStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
@@ -31,12 +32,14 @@ public class DriverProfile {
     @Column(nullable = false, unique = true)
     private String licenseNumber;
 
-    @Column(nullable = false)
-    private String contactNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DriverAvailabilityStatus availabilityStatus = DriverAvailabilityStatus.OFFLINE;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DriverStatus status = DriverStatus.PENDING;
 
     @Column(nullable = false)
     private Boolean isActive = true;

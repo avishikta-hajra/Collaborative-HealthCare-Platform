@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import {
+    ArrowLeft, X, MapPin, Phone, ShieldCheck,
+    Star, Activity, Clock, Droplet, Wind
+} from 'lucide-react'
 import { hospitalsData } from './Hospitals'
 
 export default function Listings() {
@@ -11,6 +14,7 @@ export default function Listings() {
         id: h.id,
         name: h.name,
         location: h.city || h.address || '',
+        address: h.address || '',
         bedsAvailable: Number(h.bedsAvailable) || 0,
         oxygenCylinders: h.oxygenCylinders ?? Math.max(5, Math.floor((Number(h.bedsAvailable) || 0) * 1.5)),
         bloodUnits: h.bloodUnits ?? {
@@ -20,10 +24,17 @@ export default function Listings() {
         },
         phone: h.phone || '',
         distanceKm: typeof h.distance === 'number' ? h.distance : parseFloat(String(h.distance || '').replace(/[^0-9.]/g, '')) || 0,
+        rating: h.rating || 0,
+        reviews: h.reviews || 0,
+        emergency: h.emergency || "24/7",
+        type: h.type || "Private",
+        verified: h.verified || false,
+        specialties: h.specialties || [],
         lastUpdated: new Date().toISOString()
     }))
 
     const [listings] = useState(initialListings)
+    const [selectedListing, setSelectedListing] = useState(null)
 
     // Filter / sort state
     const [query, setQuery] = useState('')
@@ -139,13 +150,111 @@ export default function Listings() {
                                 </div>
 
                                 <div className="mt-6 flex items-center justify-between">
-                                    <button onClick={() => navigate('/hospitals')} className="px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-600 transition-colors">View Details</button>
+                                    <button onClick={() => setSelectedListing(l)} className="w-full px-4 py-2.5 bg-cyan-600 font-bold text-white rounded-xl hover:bg-cyan-700 transition-colors shadow-sm cursor-pointer">
+                                        View Details
+                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </main>
+
+            {/* Modal for showing specific hospital details */}
+            {selectedListing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedListing(null)}>
+                    <div className="bg-white rounded-3xl shadow-2xl border-2 border-sky-700 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-up" onClick={(e) => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="bg-white border-b-2 border-slate-100 p-6 flex items-center justify-between z-10 shrink-0">
+                            <h2 className="text-xl md:text-2xl font-bold text-sky-950 flex items-center gap-2">
+                                {selectedListing.name}
+                                {selectedListing.verified && <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" title="Verified Facility" />}
+                            </h2>
+                            <button onClick={() => setSelectedListing(null)} className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-full transition-colors cursor-pointer shrink-0">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Body */}
+                        <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                            {/* Location & Contact */}
+                            <div className="flex flex-col md:flex-row gap-4 justify-between bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                                <div className="space-y-3">
+                                    <p className="text-slate-600 flex items-start gap-2 font-medium">
+                                        <MapPin className="w-5 h-5 text-cyan-600 shrink-0" />
+                                        <span>{selectedListing.address}, {selectedListing.location} <br /><span className="text-[13px] font-bold text-slate-400">{selectedListing.distanceKm} km away</span></span>
+                                    </p>
+                                    <p className="text-slate-600 flex items-center gap-2 font-medium">
+                                        <Phone className="w-5 h-5 text-cyan-600 shrink-0" />
+                                        <a href={`tel:${selectedListing.phone}`} className="hover:text-cyan-700 font-bold transition-colors">{selectedListing.phone}</a>
+                                    </p>
+                                </div>
+                                <div className="flex flex-row md:flex-col items-start md:items-end gap-3 flex-wrap">
+                                    <div className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200">
+                                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                        <span className="font-bold text-yellow-700">{selectedListing.rating}</span>
+                                        <span className="text-xs text-slate-500 ml-1 font-medium">({selectedListing.reviews} rev)</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
+                                        <Clock className="w-4 h-4 text-red-500" />
+                                        <span className="font-bold text-red-700 text-sm">Emergency: {selectedListing.emergency}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Resources Grid */}
+                            <div>
+                                <h3 className="text-[18px] font-bold text-sky-950 mb-3">Live Availability Resources</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center">
+                                        <Activity className="w-8 h-8 text-cyan-600 mb-2" />
+                                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">ICU Beds</span>
+                                        <span className={`text-2xl font-bold ${selectedListing.bedsAvailable > 5 ? 'text-emerald-600' : selectedListing.bedsAvailable > 0 ? 'text-amber-500' : 'text-red-500'}`}>{selectedListing.bedsAvailable}</span>
+                                    </div>
+                                    <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center">
+                                        <Wind className="w-8 h-8 text-cyan-600 mb-2" />
+                                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Oxygen Cylinders</span>
+                                        <span className="text-2xl font-bold text-slate-800">{selectedListing.oxygenCylinders}</span>
+                                    </div>
+                                    <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center">
+                                        <Droplet className="w-8 h-8 text-red-500 mb-2" />
+                                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Blood Units</span>
+                                        <div className="flex flex-wrap justify-center gap-1.5">
+                                            {Object.entries(selectedListing.bloodUnits).map(([type, qty]) => (
+                                                <span key={type} className={`px-2 py-0.5 rounded-md text-[13px] font-bold border ${qty > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>{type}: {qty}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Specialties */}
+                            {selectedListing.specialties && selectedListing.specialties.length > 0 && (
+                                <div>
+                                    <h3 className="text-[18px] font-bold text-sky-950 mb-3">Medical Specialties</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedListing.specialties.map((spec, idx) => (
+                                            <span key={idx} className="px-3 py-1.5 bg-cyan-50 text-cyan-800 text-[13px] font-bold rounded-lg border border-cyan-100">
+                                                {spec}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer Actions */}
+                        <div className="bg-white border-t-2 border-slate-100 p-6 flex gap-4 shrink-0">
+                            <button onClick={() => navigate('/telemedicine')} className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors shadow-md cursor-pointer">
+                                Book Appointment
+                            </button>
+                            <button onClick={() => navigate('/ambulance')} className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors shadow-md cursor-pointer">
+                                Request Ambulance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

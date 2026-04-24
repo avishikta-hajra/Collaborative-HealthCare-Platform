@@ -8,6 +8,7 @@ import AmbulanceService from "./components/AmbulanceService";
 import GovernmentSchemes from "./components/GovernmentSchemes";
 import Listings from "./components/Listings";
 import AmbulanceDriverPortal from "./components/AmbulanceDriverPortal";
+import CommunityHealth from "./components/CommunityHealth";
 
 export default function App() {
   return (
@@ -17,11 +18,12 @@ export default function App() {
         <Route path="/telemedicine" element={<Telemedicine />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/PortalSelection" element={<PortalSelection />} />
-        <Route path="/hospitals" element={<Hospitals/>}/>
+        <Route path="/hospitals" element={<Hospitals />} />
         <Route path="/ambulance" element={<AmbulanceService />} />
-        <Route path="/schemes" element={< GovernmentSchemes/>} />
+        <Route path="/schemes" element={< GovernmentSchemes />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/driver-portal" element={<AmbulanceDriverPortal />} />
+        <Route path="/community-health" element={<CommunityHealth />} />
       </Routes>
     </Router>
   );

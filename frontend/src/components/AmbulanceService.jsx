@@ -4,7 +4,7 @@ import {
     ArrowLeft, MapPin, Phone, 
     Clock, AlertCircle, 
     CheckCircle2, Navigation, User, X, 
-    Truck, Activity, Info
+    Truck, Activity, Info, Loader2
 } from "lucide-react";
 
 // Mock Data: Ambulance Types & Pricing
@@ -12,14 +12,6 @@ const ambulanceTypes = [
     { id: "bls", name: "Basic Life Support (BLS)", desc: "For stable patients requiring basic monitoring.", baseCharge: "₹800", perKm: "₹15" },
     { id: "als", name: "Advanced Life Support (ALS)", desc: "Includes ventilator, defibrillator, and paramedic.", baseCharge: "₹2,500", perKm: "₹25" },
     { id: "nicu", name: "Neonatal (NICU)", desc: "Specialized transport for critically ill newborns.", baseCharge: "₹3,000", perKm: "₹30" }
-];
-
-// Mock Data: Nearby available units for Manual Selection
-const nearbyUnits = [
-    { id: 1, provider: "City LifeCare Rescue", type: "ALS", distance: "1.2 km", eta: "4 mins", rating: 4.8 },
-    { id: 2, provider: "Apollo Emergency Fleet", type: "ALS", distance: "2.5 km", eta: "8 mins", rating: 4.9 },
-    { id: 3, provider: "QuickResponse BLS", type: "BLS", distance: "0.8 km", eta: "3 mins", rating: 4.5 },
-    { id: 4, provider: "Hope Neo-natal Care", type: "NICU", distance: "3.1 km", eta: "11 mins", rating: 4.7 }
 ];
 
 export default function AmbulanceService() {
@@ -37,6 +29,59 @@ export default function AmbulanceService() {
     const [assignedUnit, setAssignedUnit] = useState(null);
     const [etaCountdown, setEtaCountdown] = useState(0);
 
+    // Live Data States
+    const [liveUnits, setLiveUnits] = useState([]);
+    const [isLoadingUnits, setIsLoadingUnits] = useState(false);
+
+    // Fetch live ambulances on mount
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            setIsLoadingUnits(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Grab auth data from either local or session storage
+                    const authDataStr = localStorage.getItem("healthbridge.auth") || sessionStorage.getItem("healthbridge.auth");
+                    let token = "";
+                    
+                    if (authDataStr) {
+                        try {
+                            const authData = JSON.parse(authDataStr);
+                            token = authData.accessToken; // Extract the token from the parsed JSON
+                        } catch (e) {
+                            console.error("Error parsing auth data:", e);
+                        }
+                    }
+
+                    fetch(`http://localhost:8080/api/ambulances/nearby?lat=${latitude}&lng=${longitude}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Unauthorized or server error");
+                        return res.json();
+                    })
+                    .then(data => {
+                        setLiveUnits(data); // Save the fetched data into state
+                        setIsLoadingUnits(false); // Turn off the loading spinner
+                    })
+                    .catch(err => {
+                        console.error("Error fetching live units:", err);
+                        setIsLoadingUnits(false);
+                    });
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    setIsLoadingUnits(false);
+                }
+            );
+        }
+    }, []);
+
     // Auto-Dispatch Flow
     const handleAutoDispatch = (e) => {
         e.preventDefault();
@@ -44,15 +89,18 @@ export default function AmbulanceService() {
         
         setDispatchState("searching");
         setTimeout(() => {
+            // If live units exist, pick the closest one matching the type, otherwise mock
+            const closestMatch = liveUnits.find(u => u.type.toLowerCase() === selectedType.toLowerCase());
+            
             setAssignedUnit({
-                provider: "System Assigned ALS",
+                provider: closestMatch ? closestMatch.provider : "System Assigned ALS",
                 driver: "Rajesh Kumar",
                 vehicleNo: "WB 04 F 1234",
                 phone: "+91 98765 43210",
-                type: "ALS",
-                charge: "₹2,500 (Base)"
+                type: selectedType.toUpperCase(),
+                charge: activeCharge || "Standard"
             });
-            setEtaCountdown(5);
+            setEtaCountdown(closestMatch ? parseInt(closestMatch.eta) : 5);
             setDispatchState("assigned");
         }, 2000);
     };
@@ -196,27 +244,39 @@ export default function AmbulanceService() {
                                     {bookingMode === "manual" && (
                                         <div className="flex flex-col flex-1">
                                             <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-3">Available Nearby</label>
-                                            <div className="space-y-4">
-                                                {nearbyUnits.map((unit) => (
-                                                    <div key={unit.id} className="p-4 border-2 border-slate-100 rounded-xl hover:border-cyan-300 transition-colors bg-white group cursor-pointer" onClick={() => handleManualBooking(unit)}>
-                                                        <div className="flex justify-between items-start mb-3">
-                                                            <div>
-                                                                <div className="font-bold text-blue-950 text-[15px] group-hover:text-cyan-700 transition-colors">{unit.provider}</div>
-                                                                <div className="text-[13px] font-medium text-slate-500 mt-0.5">{unit.type} • {unit.rating} ★</div>
+                                            
+                                            {isLoadingUnits ? (
+                                                <div className="flex flex-col items-center justify-center py-10">
+                                                    <Loader2 className="w-8 h-8 text-cyan-600 animate-spin mb-2" />
+                                                    <span className="text-[13px] text-slate-500 font-medium">Finding live ambulances...</span>
+                                                </div>
+                                            ) : liveUnits.length === 0 ? (
+                                                <div className="text-center py-6 bg-slate-50 rounded-xl border border-slate-200 text-slate-500 text-[14px]">
+                                                    No available units found nearby.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {liveUnits.map((unit) => (
+                                                        <div key={unit.id} className="p-4 border-2 border-slate-100 rounded-xl hover:border-cyan-300 transition-colors bg-white group cursor-pointer" onClick={() => handleManualBooking(unit)}>
+                                                            <div className="flex justify-between items-start mb-3">
+                                                                <div>
+                                                                    <div className="font-bold text-blue-950 text-[15px] group-hover:text-cyan-700 transition-colors">{unit.provider}</div>
+                                                                    <div className="text-[13px] font-medium text-slate-500 mt-0.5">{unit.type} • {unit.rating} ★</div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="font-bold text-cyan-600 text-[15px]">{unit.eta}</div>
+                                                                    <div className="text-[12px] font-semibold text-slate-400">{unit.distance}</div>
+                                                                </div>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <div className="font-bold text-cyan-600 text-[15px]">{unit.eta}</div>
-                                                                <div className="text-[12px] font-semibold text-slate-400">{unit.distance}</div>
-                                                            </div>
+                                                            <button 
+                                                                className="w-full mt-2 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 text-[13px] font-bold rounded-lg transition-colors cursor-pointer"
+                                                            >
+                                                                Select this unit
+                                                            </button>
                                                         </div>
-                                                        <button 
-                                                            className="w-full mt-2 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 text-[13px] font-bold rounded-lg transition-colors cursor-pointer"
-                                                        >
-                                                            Select this unit
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -302,7 +362,7 @@ export default function AmbulanceService() {
                             style={{ border: 0 }} 
                             loading="lazy" 
                             allowFullScreen 
-                            src={`https://maps.google.com/maps?q=$${encodeURIComponent(mapLocation)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                            src={`https://maps.google.com/maps?q=${encodeURIComponent(mapLocation)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
                             title="Tracking Map"
                         ></iframe>
                     </div>

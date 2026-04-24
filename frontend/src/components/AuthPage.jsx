@@ -147,7 +147,14 @@ export default function AuthPage() {
     });
 
     saveAuthSession(session, form.remember);
-    navigate("/");
+    // Redirect based on the portal they used to log in
+    if (portalKey === "driver" || session?.role === "DRIVER") {
+        navigate("/driver-portal");
+    } else if (portalKey === "admin" || session?.role === "ADMIN") {
+        navigate("/admin-dashboard"); // Replace with your admin route if it exists
+    } else {
+        navigate("/"); // Default routing for patients
+    }
   };
 
   const handleSignup = async () => {

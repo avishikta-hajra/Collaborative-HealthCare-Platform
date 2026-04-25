@@ -1,67 +1,50 @@
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    ArrowLeft, Video, Mic, MicOff, VideoOff, 
-    PhoneOff, MessageSquare, FileText, User, 
-    Calendar, Paperclip, Send, Clock, 
+import {
+    ArrowLeft, Video, Mic, MicOff, VideoOff,
+    PhoneOff, MessageSquare, FileText, User,
+    Calendar, Paperclip, Send, Clock,
     Search, Loader2, Info, Star, CircleAlert,
     CalendarDays, Filter, Users, Hourglass
 } from "lucide-react";
-
-// Updated Mock Data: Added "Available" vs "In Call" statuses with queues
-const initialDoctorsList = [
-    { 
-        id: "doc-1", name: "Dr. Arvind Mehta", specialty: "General Physician", 
-        status: "Available", fee: "₹500", rating: "4.9", experience: "12 yrs", hospital: "Apollo e-Health"
-    },
-    { 
-        id: "doc-2", name: "Dr. Rajesh Kumar", specialty: "Cardiology", 
-        status: "In Call", queue: 2, estWait: "10 mins", fee: "₹1200", rating: "4.9", experience: "15 yrs", hospital: "Heart Institute"
-    },
-    { 
-        id: "doc-3", name: "Dr. Anil Kapoor", specialty: "Orthopedics", 
-        status: "Offline", nextSlot: "Today, 6:00 PM", fee: "₹900", rating: "4.8", experience: "20 yrs", hospital: "Bone & Joint Care"
-    },
-    { 
-        id: "doc-4", name: "Dr. Sunita Sharma", specialty: "Pediatrics", 
-        status: "Available", fee: "₹600", rating: "4.8", experience: "8 yrs", hospital: "City Care Clinic"
-    },
-    { 
-        id: "doc-5", name: "Dr. Priya Desai", specialty: "Dermatology", 
-        status: "In Call", queue: 1, estWait: "4 mins", fee: "₹700", rating: "4.7", experience: "6 yrs", hospital: "SkinLife Center"
-    },
-    { 
-        id: "doc-6", name: "Dr. Vikram Singh", specialty: "Cardiology", 
-        status: "Offline", nextSlot: "Tomorrow, 4:00 PM", fee: "₹1500", rating: "4.9", experience: "22 yrs", hospital: "Fortis Escorts"
-    }
-];
+import { authenticatedFetch } from "../services/authApi";
 
 const initialAppointments = [
-    { id: "app-1", doctorName: "Dr. Meera Vasudevan", specialty: "Endocrinology", date: "April 22, 2026", time: "10:30 AM" }
+    { id: "app-1", doctorName: "Dr. Meera Vasudevan", specialty: "Endocrinology", date: "April 30, 2026", time: "10:30 AM" }
 ];
 
 const specialtyFilters = ["All", "Cardiology", "Orthopedics", "General Physician", "Pediatrics", "Dermatology"];
-const availableDates = ["Apr 20 (Today)", "Apr 21 (Tomorrow)", "Apr 22 (Wed)", "Apr 23 (Thu)"];
+const availableDates = ["Apr 30 (Today)", "May 1 (Tomorrow)", "May 2 (Sat)", "May 3 (Sun)"];
 const availableTimes = ["10:00 AM", "11:30 AM", "2:00 PM", "4:30 PM", "6:00 PM"];
 
 export default function Telemedicine() {
     const navigate = useNavigate();
-    
+
     // Core States
-    const [viewState, setViewState] = useState("dashboard"); // dashboard | intake | schedule | waiting_room | connecting | active
+    const [viewState, setViewState] = useState("dashboard");
     const [appointments, setAppointments] = useState(initialAppointments);
-    
+
+    // Backend Data States
+    const [doctorsList, setDoctorsList] = useState([]);
+    const [isLoadingDoctors, setIsLoadingDoctors] = useState(false);
+
+    // WebSocket States
+    const [stompClient, setStompClient] = useState(null);
+    const [activeSessionId, setActiveSessionId] = useState(null);
+
     // Selection & Filter
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedFilter, setSelectedFilter] = useState("All");
-    
+
     // Form & Waitlist States
     const [symptoms, setSymptoms] = useState("");
     const [scheduleDate, setScheduleDate] = useState(availableDates[0]);
     const [scheduleTime, setScheduleTime] = useState("");
     const [currentQueuePos, setCurrentQueuePos] = useState(0);
-    
+
     // Call Room States
     const [micEnabled, setMicEnabled] = useState(true);
     const [camEnabled, setCamEnabled] = useState(true);
@@ -75,31 +58,94 @@ export default function Telemedicine() {
         if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }, [messages, activeTab]);
 
+    // Cleanup WebSocket on unmount
+    useEffect(() => {
+        return () => {
+            if (stompClient) {
+                stompClient.deactivate();
+            }
+        };
+    }, [stompClient]);
+
+    // Fetch Doctors from Backend on Mount
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            setIsLoadingDoctors(true);
+            try {
+                const data = await authenticatedFetch("/api/doctors");
+
+                const formattedDoctors = data.map(doc => {
+                    let statusUI = "Offline";
+                    if (doc.status === "AVAILABLE") statusUI = "Available";
+                    if (doc.status === "IN_CALL") statusUI = "In Call";
+
+                    return {
+                        ...doc,
+                        status: statusUI
+                    };
+                });
+
+                setDoctorsList(formattedDoctors);
+            } catch (error) {
+                console.error("Failed to fetch doctors:", error);
+            } finally {
+                setIsLoadingDoctors(false);
+            }
+        };
+
+        fetchDoctors();
+    }, []);
+
     // Simulated Waitlist Queue progression
     useEffect(() => {
         let timer;
         if (viewState === "waiting_room" && currentQueuePos > 0) {
             timer = setTimeout(() => {
                 setCurrentQueuePos(prev => prev - 1);
-            }, 3000); // Progress queue every 3 seconds for demo purposes
+            }, 3000);
         } else if (viewState === "waiting_room" && currentQueuePos === 0) {
-            // Queue finished, move to connecting
             setViewState("connecting");
+            const mockSessionId = "101";
+            connectWebSocket(mockSessionId);
             setTimeout(() => connectToCall(), 1500);
         }
         return () => clearTimeout(timer);
     }, [viewState, currentQueuePos]);
 
-    const filteredDoctors = initialDoctorsList.filter(doc => {
-        const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              doc.specialty.toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredDoctors = doctorsList.filter(doc => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            doc.specialty.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter = selectedFilter === "All" || doc.specialty === selectedFilter;
         return matchesSearch && matchesFilter;
     });
 
+    // Initialize WebSocket connection
+    const connectWebSocket = (sessionId) => {
+        const socket = new SockJS("http://localhost:8080/ws-telemedicine");
+        const client = new Client({
+            webSocketFactory: () => socket,
+            onConnect: () => {
+                console.log("Connected to Telemedicine WebSocket");
+
+                client.subscribe(`/topic/session/${sessionId}`, (message) => {
+                    const receivedMsg = JSON.parse(message.body);
+                    setMessages(prev => [...prev, receivedMsg]);
+                });
+            },
+            onStompError: (frame) => {
+                console.error("Broker reported error: " + frame.headers['message']);
+                console.error("Additional details: " + frame.body);
+            }
+        });
+
+        client.activate();
+        setStompClient(client);
+        setActiveSessionId(sessionId);
+    };
+
     const handleSelectDoctor = (doctor) => {
         setSelectedDoctor(doctor);
-        if(doctor.status === "Offline") {
+        if (doctor.status === "Offline") {
             setViewState("schedule");
         } else {
             setViewState("intake");
@@ -109,12 +155,17 @@ export default function Telemedicine() {
     const handleStartConsultation = (e) => {
         e.preventDefault();
         if (!symptoms.trim()) return alert("Please describe your symptoms briefly.");
-        
+
         if (selectedDoctor.status === "In Call") {
             setCurrentQueuePos(selectedDoctor.queue);
             setViewState("waiting_room");
         } else {
             setViewState("connecting");
+
+            // Use a dummy session ID for testing
+            const mockSessionId = "101";
+            connectWebSocket(mockSessionId);
+
             setTimeout(() => connectToCall(), 1500);
         }
     };
@@ -122,23 +173,19 @@ export default function Telemedicine() {
     const connectToCall = () => {
         setViewState("active");
         setMessages([{ sender: "system", text: `Connection secure. You are now consulting with ${selectedDoctor.name}.` }]);
-        setTimeout(() => {
-            setMessages(prev => [...prev, { sender: "doctor", text: `Hello. I have reviewed your intake notes. How long have you been experiencing these symptoms?` }]);
-        }, 1500);
     };
 
     const handleScheduleAppointment = (e) => {
         e.preventDefault();
         if (!scheduleTime) return alert("Please select a time slot.");
-
         const newAppointment = {
             id: `app-${Date.now()}`,
             doctorName: selectedDoctor.name,
             specialty: selectedDoctor.specialty,
-            date: scheduleDate.split(' ')[0], 
+            date: scheduleDate.split(' ')[0],
             time: scheduleTime
         };
-        
+
         setAppointments(prev => [...prev, newAppointment]);
         setScheduleTime("");
         setScheduleDate(availableDates[0]);
@@ -148,23 +195,39 @@ export default function Telemedicine() {
 
     const handleSendMessage = (e) => {
         e.preventDefault();
-        if (!chatInput.trim()) return;
-        setMessages(prev => [...prev, { sender: "user", text: chatInput }]);
+        if (!chatInput.trim() || !stompClient || !activeSessionId) return;
+
+        const messagePayload = {
+            sessionId: activeSessionId,
+            senderType: 'USER',
+            text: chatInput,
+            timestamp: new Date().toISOString()
+        };
+
+        stompClient.publish({
+            destination: `/app/chat/${activeSessionId}`,
+            body: JSON.stringify(messagePayload)
+        });
+
         setChatInput("");
     };
 
     const endCall = () => {
-        if(window.confirm("Are you sure you want to end this consultation?")) {
+        if (window.confirm("Are you sure you want to end this consultation?")) {
+            if (stompClient) {
+                stompClient.deactivate();
+                setStompClient(null);
+            }
             setViewState("dashboard");
             setSelectedDoctor(null);
             setSymptoms("");
             setMessages([]);
+            setActiveSessionId(null);
         }
     };
 
-    // Helper for rendering status badges accurately
     const getStatusStyles = (status) => {
-        switch(status) {
+        switch (status) {
             case "Available": return { dot: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" };
             case "In Call": return { dot: "bg-amber-500", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" };
             default: return { dot: "bg-slate-400", text: "text-slate-600", bg: "bg-slate-100", border: "border-slate-200" };
@@ -173,12 +236,12 @@ export default function Telemedicine() {
 
     return (
         <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-50 border-t-2 pt-24 pb-16 pl-10 pr-10 flex flex-col">
-            
+
             {/* Top Navbar */}
             <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
                 <div className="w-full flex justify-between items-center">
-                    <button 
-                        onClick={() => viewState !== 'dashboard' && viewState !== 'active' ? setViewState('dashboard') : navigate('/')} 
+                    <button
+                        onClick={() => viewState !== 'dashboard' && viewState !== 'active' ? setViewState('dashboard') : navigate('/')}
                         className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer"
                     >
                         <ArrowLeft className="w-5 h-5 mr-2" /> {viewState === 'dashboard' ? 'Back to Home' : 'Back to Directory'}
@@ -193,7 +256,7 @@ export default function Telemedicine() {
 
             {/* Edge-to-Edge Main Container */}
             <div className="w-full flex-1">
-                
+
                 {/* STATE 1: DASHBOARD */}
                 {viewState === "dashboard" && (
                     <div className="w-full">
@@ -208,31 +271,30 @@ export default function Telemedicine() {
 
                         <div className="flex flex-col lg:flex-row gap-8">
                             <div className="w-full lg:w-2/3 flex flex-col">
-                                
+
                                 {/* Search & Filter Bar */}
                                 <div className="bg-white rounded-3xl shadow-xl border-sky-700 border-2 p-5 mb-8 flex flex-col items-start gap-4">
                                     <div className="relative w-full">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             placeholder="Search by doctor name or specialty..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all shadow-inner"
                                         />
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-3 w-full overflow-x-auto hide-scrollbar pb-1">
                                         <Filter className="w-5 h-5 text-cyan-600 shrink-0" />
                                         {specialtyFilters.map(filter => (
-                                            <button 
+                                            <button
                                                 key={filter}
                                                 onClick={() => setSelectedFilter(filter)}
-                                                className={`px-5 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors border-2 cursor-pointer ${
-                                                    selectedFilter === filter 
-                                                    ? 'bg-blue-950 text-white border-blue-950 shadow-md' 
+                                                className={`px-5 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors border-2 cursor-pointer ${selectedFilter === filter
+                                                    ? 'bg-blue-950 text-white border-blue-950 shadow-md'
                                                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                                                }`}
+                                                    }`}
                                             >
                                                 {filter}
                                             </button>
@@ -240,65 +302,75 @@ export default function Telemedicine() {
                                     </div>
                                 </div>
 
-                                {/* Doctor Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {filteredDoctors.map(doc => {
-                                        const styles = getStatusStyles(doc.status);
-                                        return (
-                                            <div key={doc.id} className="bg-white border-sky-700 border-2 rounded-3xl p-6 flex flex-col hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 shadow-lg group">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex gap-4 items-center">
-                                                        <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 overflow-hidden shrink-0 group-hover:border-cyan-300 transition-colors">
-                                                            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${doc.name}&backgroundColor=f1f5f9&textColor=475569`} alt={doc.name} className="w-full h-full" />
+                                {/* Doctor Grid with Loading State */}
+                                {isLoadingDoctors ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                                        <Loader2 className="w-10 h-10 text-cyan-600 animate-spin mb-4" />
+                                        <p className="text-slate-500 font-medium">Loading available specialists...</p>
+                                    </div>
+                                ) : filteredDoctors.length === 0 ? (
+                                    <div className="text-center py-10 bg-white rounded-3xl border-2 border-slate-200">
+                                        <p className="text-slate-500 font-medium">No doctors found matching your criteria.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {filteredDoctors.map(doc => {
+                                            const styles = getStatusStyles(doc.status);
+                                            return (
+                                                <div key={doc.id} className="bg-white border-sky-700 border-2 rounded-3xl p-6 flex flex-col hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 shadow-lg group">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div className="flex gap-4 items-center">
+                                                            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 overflow-hidden shrink-0 group-hover:border-cyan-300 transition-colors">
+                                                                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${doc.name}&backgroundColor=f1f5f9&textColor=475569`} alt={doc.name} className="w-full h-full" />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="font-poppins text-[18px] font-bold text-blue-950 leading-tight group-hover:text-cyan-700 transition-colors">{doc.name}</h3>
+                                                                <p className="text-[13px] font-medium text-slate-500 mt-1">{doc.specialty}</p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <h3 className="font-poppins text-[18px] font-bold text-blue-950 leading-tight group-hover:text-cyan-700 transition-colors">{doc.name}</h3>
-                                                            <p className="text-[13px] font-medium text-slate-500 mt-1">{doc.specialty}</p>
-                                                        </div>
                                                     </div>
-                                                </div>
-                                                
-                                                <div className="grid grid-cols-2 gap-3 mb-5 mt-auto">
-                                                    <div className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50">
-                                                        <Star className="w-4 h-4 text-amber-500 shrink-0" />
-                                                        <div className="text-[12px] font-bold text-slate-700">{doc.rating}</div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50">
-                                                        <Clock className="w-4 h-4 text-cyan-600 shrink-0" />
-                                                        <div className="text-[12px] font-bold text-slate-700">{doc.experience}</div>
-                                                    </div>
-                                                    <div className="col-span-2 flex justify-between items-center bg-slate-50 p-3 rounded-xl border-2 border-slate-100">
-                                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Consultation Fee</span>
-                                                        <span className="font-bold text-[14px] text-blue-950">{doc.fee}</span>
-                                                    </div>
-                                                </div>
 
-                                                <div className="mt-auto pt-5 border-t-2 border-slate-100 flex items-center justify-between">
-                                                    <div className="flex flex-col">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`w-2.5 h-2.5 rounded-full ${styles.dot}`}></span>
-                                                            <span className={`text-[13px] font-bold ${styles.text}`}>{doc.status}</span>
+                                                    <div className="grid grid-cols-2 gap-3 mb-5 mt-auto">
+                                                        <div className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50">
+                                                            <Star className="w-4 h-4 text-amber-500 shrink-0" />
+                                                            <div className="text-[12px] font-bold text-slate-700">{doc.rating}</div>
                                                         </div>
-                                                        {doc.status === 'In Call' && (
-                                                            <span className="text-[11px] font-semibold text-slate-400 mt-1 ml-4">{doc.queue} patient(s) waiting</span>
-                                                        )}
+                                                        <div className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50">
+                                                            <Clock className="w-4 h-4 text-cyan-600 shrink-0" />
+                                                            <div className="text-[12px] font-bold text-slate-700">{doc.experience}</div>
+                                                        </div>
+                                                        <div className="col-span-2 flex justify-between items-center bg-slate-50 p-3 rounded-xl border-2 border-slate-100">
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Consultation Fee</span>
+                                                            <span className="font-bold text-[14px] text-blue-950">{doc.fee}</span>
+                                                        </div>
                                                     </div>
-                                                    <button 
-                                                        onClick={() => handleSelectDoctor(doc)}
-                                                        className={`px-5 py-2.5 rounded-xl text-[14px] font-bold transition-all shadow-sm cursor-pointer ${
-                                                            doc.status === 'Available' ? 'bg-cyan-600 hover:bg-cyan-700 text-white' : 
-                                                            doc.status === 'In Call' ? 'bg-white border-2 border-amber-500 text-amber-700 hover:bg-amber-50' :
-                                                            'bg-white border-2 border-slate-300 hover:bg-slate-50 text-slate-700'
-                                                        }`}
-                                                    >
-                                                        {doc.status === 'Available' ? 'Consult Now' : 
-                                                         doc.status === 'In Call' ? 'Join Waitlist' : 'Schedule'}
-                                                    </button>
+
+                                                    <div className="mt-auto pt-5 border-t-2 border-slate-100 flex items-center justify-between">
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`w-2.5 h-2.5 rounded-full ${styles.dot}`}></span>
+                                                                <span className={`text-[13px] font-bold ${styles.text}`}>{doc.status}</span>
+                                                            </div>
+                                                            {doc.status === 'In Call' && (
+                                                                <span className="text-[11px] font-semibold text-slate-400 mt-1 ml-4">{doc.queue} patient(s) waiting</span>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleSelectDoctor(doc)}
+                                                            className={`px-5 py-2.5 rounded-xl text-[14px] font-bold transition-all shadow-sm cursor-pointer ${doc.status === 'Available' ? 'bg-cyan-600 hover:bg-cyan-700 text-white' :
+                                                                doc.status === 'In Call' ? 'bg-white border-2 border-amber-500 text-amber-700 hover:bg-amber-50' :
+                                                                    'bg-white border-2 border-slate-300 hover:bg-slate-50 text-slate-700'
+                                                                }`}
+                                                        >
+                                                            {doc.status === 'Available' ? 'Consult Now' :
+                                                                doc.status === 'In Call' ? 'Join Waitlist' : 'Schedule'}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="w-full lg:w-1/3 flex flex-col gap-6">
@@ -355,8 +427,8 @@ export default function Telemedicine() {
                         <div className="text-center mb-8">
                             <h1 className="font-poppins text-3xl font-bold text-blue-950 mb-2">Patient Intake Form</h1>
                             <p className="text-slate-600 text-[16px]">
-                                {selectedDoctor.status === "Available" 
-                                    ? "Provide details to connect instantly." 
+                                {selectedDoctor.status === "Available"
+                                    ? "Provide details to connect instantly."
                                     : "Provide details to join the waitlist."}
                             </p>
                         </div>
@@ -376,11 +448,11 @@ export default function Telemedicine() {
                                     <p className="text-[14px] font-medium text-slate-600">{selectedDoctor.specialty} • {selectedDoctor.hospital}</p>
                                 </div>
                             </div>
-                            
+
                             <form onSubmit={handleStartConsultation} className="space-y-6">
                                 <div>
                                     <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-2">Chief Complaint / Symptoms</label>
-                                    <textarea 
+                                    <textarea
                                         required
                                         rows="5"
                                         value={symptoms}
@@ -421,16 +493,16 @@ export default function Telemedicine() {
                                     <p className="text-[14px] font-medium text-slate-600">{selectedDoctor.specialty} • {selectedDoctor.fee}</p>
                                 </div>
                             </div>
-                            
+
                             <form onSubmit={handleScheduleAppointment}>
                                 <div className="mb-6">
                                     <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-3">Select Date</label>
                                     <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
                                         {availableDates.map(date => (
-                                            <button 
-                                                key={date} 
-                                                type="button" 
-                                                onClick={() => {setScheduleDate(date); setScheduleTime("");}} 
+                                            <button
+                                                key={date}
+                                                type="button"
+                                                onClick={() => { setScheduleDate(date); setScheduleTime(""); }}
                                                 className={`px-5 py-3.5 rounded-xl text-[14px] font-bold whitespace-nowrap transition-all border-2 cursor-pointer ${scheduleDate === date ? 'bg-blue-50 border-blue-600 text-blue-800 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}
                                             >
                                                 {date}
@@ -443,10 +515,10 @@ export default function Telemedicine() {
                                     <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-3">Available Time Slots</label>
                                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                         {availableTimes.map(time => (
-                                            <button 
-                                                key={time} 
-                                                type="button" 
-                                                onClick={() => setScheduleTime(time)} 
+                                            <button
+                                                key={time}
+                                                type="button"
+                                                onClick={() => setScheduleTime(time)}
                                                 className={`py-3 rounded-xl text-[14px] font-bold transition-all border-2 text-center cursor-pointer ${scheduleTime === time ? 'bg-blue-950 border-blue-950 text-white shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
                                             >
                                                 {time}
@@ -476,10 +548,11 @@ export default function Telemedicine() {
                         </div>
                         <h2 className="font-poppins text-3xl font-bold text-blue-950 mb-3">Virtual Waiting Room</h2>
                         <p className="text-slate-600 text-[16px] mb-8">{selectedDoctor.name} is wrapping up a consultation.</p>
-                        
+
                         <div className="bg-white border-sky-700 border-2 rounded-3xl p-8 w-full shadow-xl">
                             <div className="text-[12px] font-bold text-slate-500 uppercase tracking-widest mb-2">Your Queue Position</div>
                             <div className="text-6xl font-poppins font-bold text-cyan-600 mb-6">{currentQueuePos === 0 ? "Next" : currentQueuePos}</div>
+
                             <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden mb-4 border border-slate-200">
                                 <div className="h-full bg-amber-400 rounded-full transition-all duration-1000" style={{ width: currentQueuePos === 0 ? '100%' : '50%' }}></div>
                             </div>
@@ -487,6 +560,7 @@ export default function Telemedicine() {
                                 {currentQueuePos === 0 ? "Preparing your secure connection..." : `Estimated wait time: ~${currentQueuePos * 4} mins`}
                             </p>
                         </div>
+
                         <button onClick={() => setViewState("dashboard")} className="mt-8 text-[15px] font-bold text-slate-500 hover:text-cyan-700 transition-colors cursor-pointer">
                             Leave Waiting Room
                         </button>
@@ -505,7 +579,7 @@ export default function Telemedicine() {
                 {/* STATE 6: ACTIVE CALL */}
                 {viewState === "active" && selectedDoctor && (
                     <div className="w-full h-[650px] lg:h-[750px] animate-fade-in bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row mt-4">
-                        
+
                         {/* Left: Main Video Stage */}
                         <div className="flex-1 bg-slate-950 flex flex-col relative">
                             <div className="absolute top-0 left-0 right-0 p-5 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-start pointer-events-none">
@@ -522,6 +596,7 @@ export default function Telemedicine() {
                                     </div>
                                     <div className="text-[14px] font-bold text-slate-400">Waiting for video stream...</div>
                                 </div>
+
                                 <div className="absolute bottom-5 right-5 w-36 md:w-56 aspect-video bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-xl overflow-hidden z-20">
                                     {camEnabled ? (
                                         <div className="w-full h-full flex items-center justify-center bg-slate-800">
@@ -564,11 +639,11 @@ export default function Telemedicine() {
                                 <div className="flex flex-col flex-1 h-full overflow-hidden bg-slate-50/50">
                                     <div className="flex-1 overflow-y-auto p-5 space-y-4">
                                         {messages.map((msg, idx) => (
-                                            <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                {msg.sender === 'system' ? (
+                                            <div key={idx} className={`flex ${msg.senderType === 'USER' || msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                {msg.senderType === 'SYSTEM' || msg.sender === 'system' ? (
                                                     <div className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-slate-400 my-3">{msg.text}</div>
                                                 ) : (
-                                                    <div className={`max-w-[85%] rounded-xl p-3 text-[14px] font-medium shadow-sm ${msg.sender === 'user' ? 'bg-cyan-600 text-white rounded-tr-sm' : 'bg-white text-slate-800 border border-slate-200 rounded-tl-sm'}`}>
+                                                    <div className={`max-w-[85%] rounded-xl p-3 text-[14px] font-medium shadow-sm ${msg.senderType === 'USER' || msg.sender === 'user' ? 'bg-cyan-600 text-white rounded-tr-sm' : 'bg-white text-slate-800 border border-slate-200 rounded-tl-sm'}`}>
                                                         {msg.text}
                                                     </div>
                                                 )}
@@ -596,6 +671,7 @@ export default function Telemedicine() {
                                         </div>
                                         <div className="text-[13px] font-medium text-slate-500">{selectedDoctor.hospital}</div>
                                     </div>
+
                                     <div className="flex-1 flex flex-col items-center justify-center text-center">
                                         <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
                                             <Info className="w-8 h-8 text-slate-300" />
@@ -603,6 +679,7 @@ export default function Telemedicine() {
                                         <h4 className="font-poppins font-bold text-blue-950 mb-1">No active prescription</h4>
                                         <p className="text-[13px] font-medium text-slate-500 max-w-[220px]">Digital prescriptions generated by {selectedDoctor.name} will appear here.</p>
                                     </div>
+
                                     <button disabled className="mt-5 w-full py-3.5 bg-slate-200 text-slate-400 rounded-xl text-[14px] font-bold cursor-not-allowed">Download PDF</button>
                                 </div>
                             )}

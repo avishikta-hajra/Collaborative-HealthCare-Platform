@@ -96,6 +96,29 @@ export default function Telemedicine() {
         fetchDoctors();
     }, []);
 
+    // --- NEW: REJOIN ACTIVE SESSION ON REFRESH ---
+    // --- UPDATE THIS EFFECT ---
+    useEffect(() => {
+        const savedSessionId = sessionStorage.getItem("activeTelemedicineSession");
+        if (savedSessionId) {
+            console.log("Found active session! Reconnecting...");
+            setViewState("connecting");
+
+            setSelectedDoctor({
+                name: "Your Doctor",
+                specialty: "Active Consultation",
+                hospital: "HealthBridge Network"
+            });
+
+            // 1. Fetch History FIRST
+            loadChatHistory(savedSessionId);
+
+            // 2. Then connect
+            connectWebSocket(savedSessionId);
+            setTimeout(() => setViewState("active"), 1000); // Replaced connectToCall() here to avoid overwriting messages
+        }
+    }, []);
+
     // Simulated Waitlist Queue progression
     useEffect(() => {
         let timer;
@@ -152,7 +175,7 @@ export default function Telemedicine() {
         }
     };
 
-    const handleStartConsultation = (e) => {
+    const handleStartConsultation = async (e) => {
         e.preventDefault();
         if (!symptoms.trim()) return alert("Please describe your symptoms briefly.");
 
@@ -162,17 +185,42 @@ export default function Telemedicine() {
         } else {
             setViewState("connecting");
 
-            // Use a dummy session ID for testing
-            const mockSessionId = "101";
-            connectWebSocket(mockSessionId);
+            try {
+                // 1. CALL THE BACKEND TO CREATE A REAL SESSION
+                const response = await authenticatedFetch("/api/consultations/start", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        doctorId: selectedDoctor.id,
+                        symptoms: symptoms
+                    })
+                });
 
-            setTimeout(() => connectToCall(), 1500);
+                // 2. GET THE REAL ID
+                const realSessionId = response.sessionId.toString();
+
+                // --- NEW: SAVE ID TO STORAGE ---
+                sessionStorage.setItem("activeTelemedicineSession", realSessionId);
+
+                loadChatHistory(realSessionId);
+
+                // 3. CONNECT TO THE WEBSOCKET USING THE REAL ID
+                connectWebSocket(realSessionId);
+
+                // 4. ENTER THE CALL
+                setTimeout(() => connectToCall(), 1500);
+
+            } catch (error) {
+                console.error("Failed to start session:", error);
+                alert("Could not connect to the doctor. Please try again.");
+                setViewState("dashboard");
+            }
         }
     };
 
     const connectToCall = () => {
         setViewState("active");
-        setMessages([{ sender: "system", text: `Connection secure. You are now consulting with ${selectedDoctor.name}.` }]);
+        // Using optional chaining just in case selectedDoctor is slow to populate on a refresh
+        setMessages([{ sender: "system", text: `Connection secure. You are now consulting with ${selectedDoctor?.name || 'your doctor'}.` }]);
     };
 
     const handleScheduleAppointment = (e) => {
@@ -218,11 +266,32 @@ export default function Telemedicine() {
                 stompClient.deactivate();
                 setStompClient(null);
             }
+
+            // --- NEW: CLEAR ID FROM STORAGE SO WE CAN RETURN TO DASHBOARD ---
+            sessionStorage.removeItem("activeTelemedicineSession");
+
             setViewState("dashboard");
             setSelectedDoctor(null);
             setSymptoms("");
             setMessages([]);
             setActiveSessionId(null);
+        }
+    };
+
+    // --- NEW HELPER FUNCTION ---
+    const loadChatHistory = async (sessionId) => {
+        try {
+            const history = await authenticatedFetch(`/api/consultations/${sessionId}/messages`);
+
+            // Set the old messages, then append our "System" connection message at the bottom
+            setMessages([
+                ...history,
+                { senderType: "SYSTEM", text: `Connection secure. Rejoined consultation.` }
+            ]);
+        } catch (error) {
+            console.error("Failed to load chat history:", error);
+            // Fallback if history fails
+            setMessages([{ senderType: "SYSTEM", text: "Connection secure." }]);
         }
     };
 
@@ -547,7 +616,7 @@ export default function Telemedicine() {
                             )}
                         </div>
                         <h2 className="font-poppins text-3xl font-bold text-blue-950 mb-3">Virtual Waiting Room</h2>
-                        <p className="text-slate-600 text-[16px] mb-8">{selectedDoctor.name} is wrapping up a consultation.</p>
+                        <p className="text-slate-600 text-[16px] mb-8">{selectedDoctor?.name || 'Your Doctor'} is wrapping up a consultation.</p>
 
                         <div className="bg-white border-sky-700 border-2 rounded-3xl p-8 w-full shadow-xl">
                             <div className="text-[12px] font-bold text-slate-500 uppercase tracking-widest mb-2">Your Queue Position</div>

@@ -1,6 +1,10 @@
 package com.quantum_beings.healthcare_platform.controller;
 
 import com.quantum_beings.healthcare_platform.dto.ChatMessageDTO;
+import com.quantum_beings.healthcare_platform.entity.ChatMessage;
+import com.quantum_beings.healthcare_platform.entity.ConsultationSession;
+import com.quantum_beings.healthcare_platform.repository.ChatMessageRepository;
+import com.quantum_beings.healthcare_platform.repository.ConsultationSessionRepository;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -13,36 +17,55 @@ import org.springframework.web.bind.annotation.RestController;
 public class TelemedicineSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageRepository chatMessageRepository;
+    private final ConsultationSessionRepository consultationSessionRepository;
 
-    public TelemedicineSocketController(SimpMessagingTemplate messagingTemplate) {
+    public TelemedicineSocketController(SimpMessagingTemplate messagingTemplate,
+                                        ChatMessageRepository chatMessageRepository,
+                                        ConsultationSessionRepository consultationSessionRepository) {
         this.messagingTemplate = messagingTemplate;
+        this.chatMessageRepository = chatMessageRepository;
+        this.consultationSessionRepository = consultationSessionRepository;
     }
 
-    /**
-     * Handles incoming messages from the React Frontend.
-     * React sends STOMP messages to /app/chat/{sessionId}
-     */
     @MessageMapping("/chat/{sessionId}")
     public void handleChatMessage(@DestinationVariable String sessionId, @Payload ChatMessageDTO message) {
-        // Broadcast the message to anyone subscribed to this specific session's chat room
+        // 1. Find the active session in the database
+        Long parsedSessionId = Long.parseLong(sessionId);
+        ConsultationSession session = consultationSessionRepository.findById(parsedSessionId)
+                .orElse(null); // In a production app, you'd handle this error more gracefully!
+
+        // 2. Save the message to the database
+        if (session != null) {
+            ChatMessage chatMessage = ChatMessage.builder()
+                    .session(session)
+                    .senderType(message.senderType())
+                    .messageText(message.text())
+                    .build();
+            chatMessageRepository.save(chatMessage);
+        }
+
+        // 3. Broadcast the message to the room
         messagingTemplate.convertAndSend("/topic/session/" + sessionId, message);
     }
 
-    /**
-     * Broadcasts queue updates.
-     * Call this from your services when a doctor accepts/ends a call.
-     */
     public void updateQueuePosition(Long doctorId, int newQueueSize) {
         messagingTemplate.convertAndSend("/topic/queue/" + doctorId, newQueueSize);
     }
 
-    /**
-     * --- TEMPORARY TESTING ENDPOINT ---
-     * Allows us to simulate a doctor replying by sending an HTTP POST request from Postman.
-     */
     @PostMapping("/api/test-doctor-reply")
     public void simulateDoctorReply(@RequestBody ChatMessageDTO message) {
-        // Broadcast the Postman HTTP message directly into the live WebSocket stream
+        // Save simulated doctor message
+        ConsultationSession session = consultationSessionRepository.findById(message.sessionId()).orElse(null);
+        if (session != null) {
+            ChatMessage chatMessage = ChatMessage.builder()
+                    .session(session)
+                    .senderType(message.senderType())
+                    .messageText(message.text())
+                    .build();
+            chatMessageRepository.save(chatMessage);
+        }
+
         messagingTemplate.convertAndSend("/topic/session/" + message.sessionId(), message);
     }
 }

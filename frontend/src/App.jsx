@@ -9,6 +9,7 @@ import GovernmentSchemes from "./components/GovernmentSchemes";
 import Listings from "./components/Listings";
 import AmbulanceDriverPortal from "./components/AmbulanceDriverPortal";
 import CommunityHealth from "./components/CommunityHealth";
+import DoctorDashboard from "./components/DoctorDashboard";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/listings" element={<Listings />} />
         <Route path="/driver-portal" element={<AmbulanceDriverPortal />} />
         <Route path="/community-health" element={<CommunityHealth />} />
+        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
       </Routes>
     </Router>
   );

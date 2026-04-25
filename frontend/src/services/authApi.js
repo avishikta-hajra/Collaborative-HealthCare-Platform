@@ -2,12 +2,15 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080
 const AUTH_STORAGE_KEY = "healthbridge.auth";
 
 async function request(path, options = {}) {
+  // Extract headers separately so they don't overwrite our defaults
+  const { headers, ...restOptions } = options;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions, // Put method, body, etc. first
     headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
+      "Content-Type": "application/json", // Set our default
+      ...(headers || {}), // Merge any custom headers (like Authorization) safely
     },
-    ...options,
   });
 
   const text = await response.text();

@@ -149,11 +149,11 @@ export default function AuthPage() {
     saveAuthSession(session, form.remember);
     // Redirect based on the portal they used to log in
     if (portalKey === "driver" || session?.role === "DRIVER") {
-        navigate("/driver-portal");
+      navigate("/driver-portal");
     } else if (portalKey === "admin" || session?.role === "ADMIN") {
-        navigate("/admin-dashboard"); // Replace with your admin route if it exists
+      navigate("/admin-dashboard"); // Replace with your admin route if it exists
     } else {
-        navigate("/"); // Default routing for patients
+      navigate("/"); // Default routing for patients
     }
   };
 
@@ -363,7 +363,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center font-sans overflow-hidden bg-linear-to-b from-cyan-100 via-indigo-100 to-blue-200 border-t-2 pt-24 pb-16 pl-10 pr-10">
+    <div className="min-h-screen flex items-center justify-center font-sans overflow-hidden bg-slate-50 border-t-2 pt-24 pb-16 pl-10 pr-10">
       <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
         <div className="w-full flex justify-between items-center">
           <button onClick={() => navigate("/PortalSelection")} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4">

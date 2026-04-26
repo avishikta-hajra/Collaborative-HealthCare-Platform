@@ -9,8 +9,9 @@ public class HealthcarePlatformApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HealthcarePlatformApplication.class, args);
-		System.out.println(new BCryptPasswordEncoder().encode("password123"));
 
+		System.out.println("Loading....");
+		System.out.println("HealthcarePlatformApplication started");
 	}
 
 }

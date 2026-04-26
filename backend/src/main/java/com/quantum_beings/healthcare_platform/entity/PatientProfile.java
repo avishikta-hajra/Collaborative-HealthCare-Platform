@@ -37,6 +37,7 @@ public class PatientProfile {
 
     private String homeAddress;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 

@@ -61,13 +61,6 @@ export default function HomePage() {
         { label: "Live Listings", route: "/listings" },
         { label: "Government Schemes", route: "/schemes" },
         { label: "Gamified Module", route: "/gamification" },
-
-        /*
-        { label: "Patient Portal", route: "/UserLogin" },
-        { label: "Doctor Portal", route: "/DoctorLogin" },
-        { label: "Hospital / Admin", route: "/AdminLogin" },
-        { label: "Contact", route: "/contact" },
-        */
     ];
 
     // Carousel Phrases

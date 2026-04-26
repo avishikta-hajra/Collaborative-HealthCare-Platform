@@ -105,7 +105,6 @@ export default function AdminLogin() {
                         </div>
                     </div> */}
 
-                    {/* <p className="text-center mt-6 text-sm text-gray-500">Not an admin? <a href="/UserLogin" className="text-cyan-600 hover:text-decoration-underline">Patient Login</a> · <a href="/DoctorLogin" className="text-blue-600 hover:text-decoration-underline transition-all">Doctor Login</a></p> */}
                 </div>
             </div>
         </div>

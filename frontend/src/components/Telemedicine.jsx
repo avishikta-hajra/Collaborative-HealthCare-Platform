@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "../services/authApi";
 
+import VideoRoom from "./VideoRoom";
+
 const initialAppointments = [
     { id: "app-1", doctorName: "Dr. Meera Vasudevan", specialty: "Endocrinology", date: "April 30, 2026", time: "10:30 AM" }
 ];
@@ -261,21 +263,24 @@ export default function Telemedicine() {
     };
 
     const endCall = () => {
-        if (window.confirm("Are you sure you want to end this consultation?")) {
-            if (stompClient) {
-                stompClient.deactivate();
-                setStompClient(null);
-            }
-
-            // --- NEW: CLEAR ID FROM STORAGE SO WE CAN RETURN TO DASHBOARD ---
-            sessionStorage.removeItem("activeTelemedicineSession");
-
-            setViewState("dashboard");
-            setSelectedDoctor(null);
-            setSymptoms("");
-            setMessages([]);
-            setActiveSessionId(null);
+        // --- NEW: Tell the backend to close the session ---
+        if (activeSessionId) {
+            authenticatedFetch(`/api/consultations/${activeSessionId}/end`, {
+                method: "POST"
+            }).catch(err => console.error("Failed to update DB:", err));
         }
+
+        if (stompClient) {
+            stompClient.deactivate();
+            setStompClient(null);
+        }
+        // Clear session storage and reset all states to return to dashboard
+        sessionStorage.removeItem("activeTelemedicineSession");
+        setViewState("dashboard");
+        setSelectedDoctor(null);
+        setSymptoms("");
+        setMessages([]);
+        setActiveSessionId(null);
     };
 
     // --- NEW HELPER FUNCTION ---
@@ -650,47 +655,13 @@ export default function Telemedicine() {
                     <div className="w-full h-[650px] lg:h-[750px] animate-fade-in bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row mt-4">
 
                         {/* Left: Main Video Stage */}
-                        <div className="flex-1 bg-slate-950 flex flex-col relative">
-                            <div className="absolute top-0 left-0 right-0 p-5 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-start pointer-events-none">
-                                <div className="text-white">
-                                    <div className="font-poppins font-bold text-[18px] text-shadow-md">{selectedDoctor.name}</div>
-                                    <div className="text-[13px] font-medium text-slate-300">{selectedDoctor.specialty}</div>
-                                </div>
-                            </div>
-
-                            <div className="flex-1 relative flex items-center justify-center w-full h-full">
-                                <div className="text-center opacity-60">
-                                    <div className="w-28 h-28 bg-slate-800 rounded-3xl mx-auto mb-4 flex items-center justify-center border border-slate-700 shadow-lg overflow-hidden">
-                                        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedDoctor.name}&backgroundColor=1e293b&textColor=94a3b8`} alt="Doctor" className="w-full h-full" />
-                                    </div>
-                                    <div className="text-[14px] font-bold text-slate-400">Waiting for video stream...</div>
-                                </div>
-
-                                <div className="absolute bottom-5 right-5 w-36 md:w-56 aspect-video bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-xl overflow-hidden z-20">
-                                    {camEnabled ? (
-                                        <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">You</span>
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-slate-900">
-                                            <VideoOff className="w-6 h-6 text-slate-600" />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="h-20 bg-slate-900 border-t-2 border-slate-800 flex items-center justify-center gap-4 px-6 z-20">
-                                <button onClick={() => setMicEnabled(!micEnabled)} className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${micEnabled ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-red-900/40 text-red-500 hover:bg-red-900/60'}`}>
-                                    {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-                                </button>
-                                <button onClick={() => setCamEnabled(!camEnabled)} className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${camEnabled ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-red-900/40 text-red-500 hover:bg-red-900/60'}`}>
-                                    {camEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-                                </button>
-                                <div className="w-px h-8 bg-slate-700 mx-2"></div>
-                                <button onClick={endCall} className="px-6 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2 text-[14px] font-bold transition-colors cursor-pointer shadow-md">
-                                    <PhoneOff className="w-5 h-5" /> End Call
-                                </button>
-                            </div>
+                        <div className="flex-1 bg-slate-950 flex flex-col relative overflow-hidden">
+                            <VideoRoom
+                                roomId={activeSessionId}
+                                userId={`patient-${activeSessionId}`} // <-- CHANGED from Date.now()
+                                userName="Patient"
+                                onLeave={endCall}
+                            />
                         </div>
 
                         {/* Right: Clinical Panel */}

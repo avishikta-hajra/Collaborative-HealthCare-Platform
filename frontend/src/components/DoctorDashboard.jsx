@@ -5,6 +5,8 @@ import { Client } from "@stomp/stompjs";
 import { LogOut, Video, Mic, PhoneOff, Send, Users, Activity } from 'lucide-react';
 import { authenticatedFetch, getAuthSession } from '../services/authApi';
 
+import VideoRoom from "./VideoRoom";
+
 export default function DoctorDashboard() {
     const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
@@ -39,7 +41,7 @@ export default function DoctorDashboard() {
 
     const handleJoinCall = async (session) => {
         setActiveSession(session);
-
+        setQueue(prevQueue => prevQueue.filter(req => req.sessionId !== session.sessionId));
         // Fetch Chat History
         try {
             const history = await authenticatedFetch(`/api/consultations/${session.sessionId}/messages`);
@@ -81,6 +83,25 @@ export default function DoctorDashboard() {
         setChatInput("");
     };
 
+    const handleEndCall = () => {
+        // --- NEW: Tell the backend to close the session ---
+        if (activeSession) {
+            authenticatedFetch(`/api/consultations/${activeSession.sessionId}/end`, {
+                method: "POST"
+            }).catch(err => console.error("Failed to update DB:", err));
+        }
+
+        // Disconnect the chat WebSocket
+        if (stompClient) {
+            stompClient.deactivate();
+            setStompClient(null);
+        }
+        // Clear the screen and return to the empty waiting room view
+        setActiveSession(null);
+        setMessages([]);
+        setChatInput("");
+    };
+
     const handleLogout = () => {
         localStorage.removeItem("healthbridge.auth");
         sessionStorage.removeItem("healthbridge.auth");
@@ -108,12 +129,12 @@ export default function DoctorDashboard() {
                         </h2>
                         <div className="space-y-3">
                             {queue.map((req, idx) => (
-                                <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 hover:border-cyan-400 transition-colors">
-                                    <div className="font-bold text-blue-950">{req.patientName}</div>
-                                    <div className="text-sm text-slate-500 line-clamp-1 mb-3">Symptoms: {req.symptoms}</div>
+                                <div key={idx} className="p-2.5 border border-slate-200 rounded-lg bg-slate-50 hover:border-cyan-400 transition-colors">
+                                    <div className="text-[14px] font-bold text-blue-950">{req.patientName}</div>
+                                    <div className="text-[12px] text-slate-500 line-clamp-1 mb-2">Symptoms: {req.symptoms}</div>
                                     <button
                                         onClick={() => handleJoinCall(req)}
-                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-lg text-sm font-bold shadow-sm"
+                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-1.5 rounded-md text-[12px] font-bold shadow-sm cursor-pointer"
                                     >
                                         Join Session
                                     </button>
@@ -128,12 +149,14 @@ export default function DoctorDashboard() {
                 <div className="w-2/3 bg-white rounded-2xl shadow-xl border-2 border-sky-700 overflow-hidden flex flex-col">
                     {activeSession ? (
                         <>
-                            {/* Video Placeholder */}
-                            <div className="h-64 bg-slate-900 relative flex items-center justify-center">
-                                <div className="text-center text-slate-400">
-                                    <Video className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                    <p>Video Stream: {activeSession.patientName}</p>
-                                </div>
+                            {/* Video Stage */}
+                            <div className="h-96 bg-slate-900 relative flex items-center justify-center overflow-hidden">
+                                <VideoRoom
+                                    roomId={activeSession.sessionId.toString()}
+                                    userId={`doctor-${activeSession.sessionId}`} // <-- CHANGED from Date.now()
+                                    userName="Dr. Mehta"
+                                    onLeave={handleEndCall}
+                                />
                             </div>
 
                             {/* Chat Area */}

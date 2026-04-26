@@ -14,6 +14,7 @@ import com.quantum_beings.healthcare_platform.security.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.time.Instant;
 
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,8 @@ public class ConsultationController {
         try {
             List<Map<String, Object>> sessions = sessionRepository.findByDoctor_Account_Email(userDetails.getUsername())
                     .stream()
+                    // ---> ADD THIS NEW FILTER LINE <---
+                    .filter(session -> session.getStatus() == ConsultationStatus.ACTIVE || session.getStatus() == ConsultationStatus.WAITING)
                     .map(session -> Map.<String, Object>of(
                             "sessionId", session.getId(),
                             "patientName", session.getPatient().getFullName(),
@@ -99,10 +102,25 @@ public class ConsultationController {
                             "status", session.getStatus()
                     ))
                     .collect(Collectors.toList());
-
             return ResponseEntity.ok(sessions);
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{sessionId}/end")
+    public ResponseEntity<?> endConsultation(@PathVariable Long sessionId) {
+        try {
+            ConsultationSession session = sessionRepository.findById(sessionId).orElse(null);
+            if (session != null) {
+                session.setStatus(ConsultationStatus.COMPLETED); // Mark as done
+                session.setEndedAt(Instant.now()); // Stamp the end time
+                sessionRepository.save(session);
+                return ResponseEntity.ok(Map.of("message", "Session officially ended"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", "Session not found"));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

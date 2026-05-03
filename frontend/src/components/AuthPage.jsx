@@ -13,9 +13,12 @@ import {
   Shield,
   Truck,
   User,
+  Stethoscope,
+  IndianRupee,
   UserPlus as UserPlusIcon,
 } from "lucide-react";
 import {
+  signupDoctor,
   getFieldErrors,
   login,
   saveAuthSession,
@@ -58,6 +61,17 @@ const portalConfig = {
     accentClass: "text-cyan-400",
     checkboxClass: "accent-cyan-400",
   },
+  doctor: {
+    label: "Doctor",
+    accountText: "doctor account",
+    loginButton: "Sign In to Doctor Portal",
+    signupButton: "Create Doctor Account",
+    icon: Stethoscope,
+    iconBg: "bg-emerald-600",
+    buttonClass: "bg-emerald-600",
+    accentClass: "text-emerald-500",
+    checkboxClass: "accent-emerald-500",
+  },
 };
 
 const initialForm = {
@@ -77,6 +91,10 @@ const initialForm = {
   hospitalId: "",
   licenseNumber: "",
   providerId: "",
+  specialty: "",
+  experience: "",
+  fee: "",
+  hospitalName: "",
 };
 
 function digitsOnly(value) {
@@ -141,19 +159,15 @@ export default function AuthPage() {
   };
 
   const handleLogin = async () => {
-    const session = await login({
-      email: form.email,
-      password: form.password,
-    });
-
+    const session = await login({ email: form.email, password: form.password });
     saveAuthSession(session, form.remember);
-    // Redirect based on the portal they used to log in
+
     if (portalKey === "driver" || session?.role === "DRIVER") {
       navigate("/driver-portal");
     } else if (portalKey === "admin" || session?.role === "ADMIN") {
-      navigate("/admin-dashboard"); // Replace with your admin route if it exists
+      navigate("/admin-dashboard");
     } else {
-      navigate("/"); // Default routing for patients
+      navigate("/");
     }
   };
 
@@ -195,6 +209,19 @@ export default function AuthPage() {
         fullName: form.fullName,
         licenseNumber: form.licenseNumber,
         providerId: Number(form.providerId),
+      });
+    }
+
+    if (portalKey === "doctor") {
+      response = await signupDoctor({
+        email: form.email,
+        password: form.password,
+        phoneNumber: digitsOnly(form.phoneNumber),
+        fullName: form.fullName,
+        specialty: form.specialty,
+        experience: form.experience,
+        fee: Number(form.fee),
+        hospitalName: form.hospitalName,
       });
     }
 
@@ -355,6 +382,48 @@ export default function AuthPage() {
               placeholder="Service provider ID"
               icon={Hash}
               error={fieldErrors.providerId}
+            />
+          </>
+        )}
+
+        {portalKey === "doctor" && (
+          <>
+            <TextInput
+              label="Specialty"
+              name="specialty"
+              value={form.specialty}
+              onChange={(event) => updateForm("specialty", event.target.value)}
+              placeholder="e.g., Cardiologist, General Physician"
+              icon={Stethoscope}
+              error={fieldErrors.specialty}
+            />
+            <TextInput
+              label="Years of Experience"
+              name="experience"
+              value={form.experience}
+              onChange={(event) => updateForm("experience", event.target.value)}
+              placeholder="e.g., 10 yrs"
+              icon={Calendar}
+              error={fieldErrors.experience}
+            />
+            <TextInput
+              label="Consultation Fee (₹)"
+              name="fee"
+              type="number"
+              value={form.fee}
+              onChange={(event) => updateForm("fee", event.target.value)}
+              placeholder="500"
+              icon={IndianRupee}
+              error={fieldErrors.fee}
+            />
+            <TextInput
+              label="Hospital/Clinic Name"
+              name="hospitalName"
+              value={form.hospitalName}
+              onChange={(event) => updateForm("hospitalName", event.target.value)}
+              placeholder="Your current practicing hospital"
+              icon={Home}
+              error={fieldErrors.hospitalName}
             />
           </>
         )}

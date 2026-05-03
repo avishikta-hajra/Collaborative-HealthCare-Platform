@@ -8,10 +8,13 @@ import com.quantum_beings.healthcare_platform.dto.*;
 import com.quantum_beings.healthcare_platform.entity.*;
 import com.quantum_beings.healthcare_platform.enums.AccountStatus;
 import com.quantum_beings.healthcare_platform.enums.Role;
+import com.quantum_beings.healthcare_platform.enums.DoctorStatus;
 import com.quantum_beings.healthcare_platform.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.quantum_beings.healthcare_platform.repository.DoctorProfileRepository;
 
 @Service
 public class SignUpService {
@@ -21,16 +24,18 @@ public class SignUpService {
     private final AdminProfileRepository adminProfileRepository;
     private final DriverProfileRepository driverProfileRepository;
     private final PatientProfileRepository patientProfileRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
     private final PasswordEncoder passwordEncoder;
 
 
-    public SignUpService(AccountRepository accountRepository, HospitalRepository hospitalRepository, ServiceProviderRepository serviceProviderRepository, AdminProfileRepository adminProfileRepository, DriverProfileRepository driverProfileRepository, PatientProfileRepository patientProfileRepository, PasswordEncoder passwordEncoder) {
+    public SignUpService(AccountRepository accountRepository, HospitalRepository hospitalRepository, ServiceProviderRepository serviceProviderRepository, AdminProfileRepository adminProfileRepository, DriverProfileRepository driverProfileRepository, PatientProfileRepository patientProfileRepository, DoctorProfileRepository doctorProfileRepository, PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
         this.hospitalRepository = hospitalRepository;
         this.serviceProviderRepository = serviceProviderRepository;
         this.adminProfileRepository = adminProfileRepository;
         this.driverProfileRepository = driverProfileRepository;
         this.patientProfileRepository = patientProfileRepository;
+        this.doctorProfileRepository = doctorProfileRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -145,7 +150,36 @@ public class SignUpService {
 
     }
 
+    @Transactional
+    public SignUpResponseDTO signUpDoctor(DoctorSignupRequestDTO request) {
+        if(accountRepository.existsByEmail(request.email())) {
+            throw new UserAlreadyExistedException("Doctor already exists");
+        }
 
+        Account account = Account.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .phoneNumber(request.phoneNumber())
+                .role(Role.DOCTOR)
+                .status(AccountStatus.ACTIVE)
+                .build();
+        accountRepository.save(account);
+
+        DoctorProfile doctor = DoctorProfile.builder()
+                .account(account)
+                .fullName(request.fullName())
+                .specialty(request.specialty())
+                .experience(request.experience())
+                .fee(request.fee())
+                .hospitalName(request.hospitalName())
+                .status(DoctorStatus.AVAILABLE) // Defaulting to available upon signup
+                .rating(5.0)
+                .currentQueueSize(0)
+                .build();
+        doctorProfileRepository.save(doctor);
+
+        return new SignUpResponseDTO("Doctor registered successfully", request.email(), "DOCTOR");
+    }
 
 
 

@@ -105,7 +105,7 @@ export default function DoctorDashboard() {
     const handleLogout = () => {
         localStorage.removeItem("healthbridge.auth");
         sessionStorage.removeItem("healthbridge.auth");
-        navigate('/login?portal=admin'); // Route to admin/doctor login
+        navigate('/login?portal=doctor'); // <-- Changed from ?portal=admin
     };
 
     return (

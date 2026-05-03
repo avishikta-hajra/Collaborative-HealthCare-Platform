@@ -55,6 +55,24 @@ export default function Telemedicine() {
     const [messages, setMessages] = useState([]);
     const chatEndRef = useRef(null);
 
+    // for distinguishing between doctor or patient login
+    useEffect(() => {
+        // Fetch session data from storage
+        const authData = localStorage.getItem("healthbridge.auth") || sessionStorage.getItem("healthbridge.auth");
+
+        if (authData) {
+            try {
+                const session = JSON.parse(authData);
+                // If the logged-in user is a Doctor, push them to the dashboard instead of showing the patient view
+                if (session.role === "DOCTOR") {
+                    navigate("/doctor-dashboard", { replace: true });
+                }
+            } catch (error) {
+                console.error("Error parsing auth data", error);
+            }
+        }
+    }, [navigate]);
+
     // Auto-scroll chat
     useEffect(() => {
         if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: "smooth" });

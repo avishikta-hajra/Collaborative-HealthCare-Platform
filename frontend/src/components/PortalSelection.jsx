@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Shield, Truck } from 'lucide-react';
+import { ArrowLeft, User, Shield, Truck, Stethoscope } from 'lucide-react';
 
 export default function PortalSelection() {
     const navigate = useNavigate();
@@ -21,9 +21,10 @@ export default function PortalSelection() {
                     <p className="text-slate-600 text-sm mt-2 max-w-l mx-auto">Tailored dashboards for patients, administrators, and ambulance drivers.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     {[
                         { icon: <User className="w-8 h-8 text-white" />, label: "Patient", route: "/login?portal=patient", sub: "Book consultations & track health", color: "text-blue-600", bg: "bg-blue-600", btn: "bg-blue-600" },
+                        { icon: <Stethoscope className="w-8 h-8 text-white" />, label: "Doctor", route: "/login?portal=doctor", sub: "Manage virtual consultations", color: "text-emerald-600", bg: "bg-emerald-600", btn: "bg-emerald-600" },
                         { icon: <Shield className="w-8 h-8 text-white" />, label: "Admin", route: "/login?portal=admin", sub: "Oversee operations & staff", color: "text-blue-900", bg: "bg-blue-900", btn: "bg-blue-900" },
                         { icon: <Truck className="w-8 h-8 text-white" />, label: "Driver", route: "/login?portal=driver", sub: "Manage ambulance assignments", color: "text-cyan-600", bg: "bg-cyan-500", btn: "bg-cyan-500" },
                     ].map((p, i) => (

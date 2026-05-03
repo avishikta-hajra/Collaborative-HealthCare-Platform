@@ -53,6 +53,7 @@ public class TelemedicineSocketController {
         messagingTemplate.convertAndSend("/topic/queue/" + doctorId, newQueueSize);
     }
 
+    /*
     @PostMapping("/api/test-doctor-reply")
     public void simulateDoctorReply(@RequestBody ChatMessageDTO message) {
         // Save simulated doctor message
@@ -68,4 +69,5 @@ public class TelemedicineSocketController {
 
         messagingTemplate.convertAndSend("/topic/session/" + message.sessionId(), message);
     }
+    */
 }

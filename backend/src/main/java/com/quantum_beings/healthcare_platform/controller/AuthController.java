@@ -48,5 +48,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(signUpService.signUpDriver(request));
     }
 
-
+    @PostMapping("/signup/doctor")
+    public ResponseEntity<SignUpResponseDTO> signupDoctor(@Valid @RequestBody DoctorSignupRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(signUpService.signUpDoctor(request));
+    }
 }

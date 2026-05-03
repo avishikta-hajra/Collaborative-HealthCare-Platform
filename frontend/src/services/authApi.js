@@ -79,6 +79,13 @@ export function signupDriver(payload) {
   });
 }
 
+export function signupDoctor(payload) {
+  return request("/auth/signup/doctor", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function saveAuthSession(session, remember) {
   const storage = remember ? localStorage : sessionStorage;
   const otherStorage = remember ? sessionStorage : localStorage;

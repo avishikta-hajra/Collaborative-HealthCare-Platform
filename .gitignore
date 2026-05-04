@@ -7,3 +7,11 @@
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example

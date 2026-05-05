@@ -43,20 +43,13 @@ const initialReports = [
     }
 ];
 
-const getTimeAgo = (dateString) => {
-    if (!dateString) return "Just now";
-    const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " mins ago";
-    return Math.floor(seconds) + " seconds ago";
+const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 };
 
 export default function CommunityHealth() {
@@ -214,7 +207,7 @@ export default function CommunityHealth() {
                                         </button>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400">
-                                        <Clock className="w-3.5 h-3.5" /> {getTimeAgo(report.timestamp)}
+                                        <Clock className="w-3.5 h-3.5" /> {formatDate(report.timestamp)}
                                     </div>
                                 </div>
                             </div>

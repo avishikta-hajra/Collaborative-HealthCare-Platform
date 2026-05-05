@@ -10,6 +10,7 @@ import Listings from "./components/Listings";
 import AmbulanceDriverPortal from "./components/AmbulanceDriverPortal";
 import CommunityHealth from "./components/CommunityHealth";
 import DoctorDashboard from "./components/DoctorDashboard";
+import Gamified from "./components/Gamified";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/driver-portal" element={<AmbulanceDriverPortal />} />
         <Route path="/community-health" element={<CommunityHealth />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+        <Route path = "/gamification" element={<Gamified />} />
       </Routes>
     </Router>
   );

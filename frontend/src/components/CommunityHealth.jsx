@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft, AlertTriangle, MapPin,
@@ -16,7 +16,7 @@ const initialReports = [
         severity: "High",
         upvotes: 142,
         downvotes: 3,
-        timeAgo: "2 hours ago",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         userVoted: null
     },
     {
@@ -27,7 +27,7 @@ const initialReports = [
         severity: "Medium",
         upvotes: 56,
         downvotes: 1,
-        timeAgo: "5 hours ago",
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
         userVoted: null
     },
     {
@@ -38,22 +38,46 @@ const initialReports = [
         severity: "Critical",
         upvotes: 310,
         downvotes: 0,
-        timeAgo: "10 mins ago",
+        timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
         userVoted: null
     }
 ];
+
+const getTimeAgo = (dateString) => {
+    if (!dateString) return "Just now";
+    const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " mins ago";
+    return Math.floor(seconds) + " seconds ago";
+};
 
 export default function CommunityHealth() {
     const navigate = useNavigate();
 
     // States
-    const [reports, setReports] = useState(initialReports);
+    const [reports, setReports] = useState(() => {
+        const saved = localStorage.getItem('communityReports');
+        return saved ? JSON.parse(saved) : initialReports;
+    });
     const [formData, setFormData] = useState({
         title: "",
         location: "",
         severity: "Medium",
         description: ""
     });
+
+    // Save reports to localStorage whenever they are updated
+    useEffect(() => {
+        localStorage.setItem('communityReports', JSON.stringify(reports));
+    }, [reports]);
 
     // Handle Form Submission
     const handleSubmit = (e) => {
@@ -65,7 +89,7 @@ export default function CommunityHealth() {
             ...formData,
             upvotes: 0,
             downvotes: 0,
-            timeAgo: "Just now",
+            timestamp: new Date().toISOString(),
             userVoted: null
         };
 
@@ -190,7 +214,7 @@ export default function CommunityHealth() {
                                         </button>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400">
-                                        <Clock className="w-3.5 h-3.5" /> {report.timeAgo}
+                                        <Clock className="w-3.5 h-3.5" /> {getTimeAgo(report.timestamp)}
                                     </div>
                                 </div>
                             </div>

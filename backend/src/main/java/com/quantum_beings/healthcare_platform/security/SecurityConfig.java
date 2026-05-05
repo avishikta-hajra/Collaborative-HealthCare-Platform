@@ -42,6 +42,10 @@ public class SecurityConfig {
                                 "/auth/signup/admin",
                                 "/auth/signup/driver",
                                 "/auth/signup/doctor",
+                                "/api/ambulances/nearby",
+                                "/api/ambulances/book",
+                                "/api/ambulances/trip/*/status",
+                                "/api/ambulances/trip/*/cancel",
                                 "/api/doctors", // Fetching doctor profiles should be public
                                 "/ws-telemedicine/**" // Allowing WebSocket endpoints for telemedicine without authentication (if needed)
                                 // "/api/test-doctor-reply" // Temporary testing endpoint for simulating doctor replies via Postman (to be removed in production)

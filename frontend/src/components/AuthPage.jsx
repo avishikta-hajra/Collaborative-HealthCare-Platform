@@ -95,6 +95,9 @@ const initialForm = {
   experience: "",
   fee: "",
   hospitalName: "",
+  // --- NEW FIELDS FOR DRIVER ---
+  vehicleNumber: "",
+  vehicleType: "",
 };
 
 function digitsOnly(value) {
@@ -209,6 +212,9 @@ export default function AuthPage() {
         fullName: form.fullName,
         licenseNumber: form.licenseNumber,
         providerId: Number(form.providerId),
+        // --- NEW FIELDS PASSED TO API ---
+        vehicleNumber: form.vehicleNumber,
+        vehicleType: form.vehicleType,
       });
     }
 
@@ -383,6 +389,28 @@ export default function AuthPage() {
               icon={Hash}
               error={fieldErrors.providerId}
             />
+            {/* --- NEW INPUT FIELDS --- */}
+            <TextInput
+              label="Vehicle Registration Number"
+              name="vehicleNumber"
+              value={form.vehicleNumber}
+              onChange={(event) => updateForm("vehicleNumber", event.target.value)}
+              placeholder="e.g., WB 04 F 9988"
+              icon={Truck}
+              error={fieldErrors.vehicleNumber}
+            />
+            <SelectInput
+              label="Vehicle Type"
+              name="vehicleType"
+              value={form.vehicleType}
+              onChange={(event) => updateForm("vehicleType", event.target.value)}
+              error={fieldErrors.vehicleType}
+            >
+              <option value="" disabled>Select vehicle type</option>
+              <option value="BLS">Basic Life Support (BLS)</option>
+              <option value="ALS">Advanced Life Support (ALS)</option>
+              <option value="NICU">Neonatal (NICU)</option>
+            </SelectInput>
           </>
         )}
 

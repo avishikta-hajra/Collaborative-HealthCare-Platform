@@ -8,5 +8,6 @@ public interface PatientProfileRepository extends JpaRepository<PatientProfile, 
 
     // Add this line so Spring Boot knows how to find the patient!
     Optional<PatientProfile> findByAccount_Email(String email);
-
+    Optional<PatientProfile> findByAccount_PhoneNumber(String phoneNumber);
+    Optional<PatientProfile> findByAccount_PhoneNumberOrEmergencyContactPhone(String accountPhone, String emergencyPhone);
 }

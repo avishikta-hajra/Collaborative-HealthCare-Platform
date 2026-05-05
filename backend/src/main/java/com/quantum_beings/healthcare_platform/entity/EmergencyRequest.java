@@ -44,6 +44,9 @@ public class EmergencyRequest {
     @Column(nullable = false)
     private String pickupAddress;
 
+    @Column(nullable = true)
+    private String dropAddress;
+
     @Column(columnDefinition = "TEXT")
     private String incidentDescription;
 

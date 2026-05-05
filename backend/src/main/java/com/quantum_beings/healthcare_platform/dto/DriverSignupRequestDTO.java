@@ -28,5 +28,12 @@ public record DriverSignupRequestDTO(
         String licenseNumber,
 
         @NotNull(message = "Provider ID is required")
-        Long providerId
+        Long providerId,
+
+        // --- NEW FIELDS: Ambulance details tied to the driver ---
+        @NotBlank(message = "Vehicle number is required")
+        String vehicleNumber,
+
+        @NotBlank(message = "Vehicle type (e.g., BLS, ALS) is required")
+        String vehicleType
 ) {}

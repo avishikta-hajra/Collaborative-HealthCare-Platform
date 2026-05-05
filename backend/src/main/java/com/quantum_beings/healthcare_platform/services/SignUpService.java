@@ -7,6 +7,7 @@ import com.quantum_beings.healthcare_platform.dto.*;
 
 import com.quantum_beings.healthcare_platform.entity.*;
 import com.quantum_beings.healthcare_platform.enums.AccountStatus;
+import com.quantum_beings.healthcare_platform.enums.AmbulanceStatus;
 import com.quantum_beings.healthcare_platform.enums.Role;
 import com.quantum_beings.healthcare_platform.enums.DoctorStatus;
 import com.quantum_beings.healthcare_platform.repository.*;
@@ -26,9 +27,9 @@ public class SignUpService {
     private final PatientProfileRepository patientProfileRepository;
     private final DoctorProfileRepository doctorProfileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AmbulanceRepository ambulanceRepository;
 
-
-    public SignUpService(AccountRepository accountRepository, HospitalRepository hospitalRepository, ServiceProviderRepository serviceProviderRepository, AdminProfileRepository adminProfileRepository, DriverProfileRepository driverProfileRepository, PatientProfileRepository patientProfileRepository, DoctorProfileRepository doctorProfileRepository, PasswordEncoder passwordEncoder) {
+    public SignUpService(AccountRepository accountRepository, HospitalRepository hospitalRepository, ServiceProviderRepository serviceProviderRepository, AdminProfileRepository adminProfileRepository, DriverProfileRepository driverProfileRepository, PatientProfileRepository patientProfileRepository, DoctorProfileRepository doctorProfileRepository, PasswordEncoder passwordEncoder, AmbulanceRepository ambulanceRepository) {
         this.accountRepository = accountRepository;
         this.hospitalRepository = hospitalRepository;
         this.serviceProviderRepository = serviceProviderRepository;
@@ -37,6 +38,7 @@ public class SignUpService {
         this.patientProfileRepository = patientProfileRepository;
         this.doctorProfileRepository = doctorProfileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.ambulanceRepository = ambulanceRepository;
     }
 
     @Transactional
@@ -113,14 +115,11 @@ public class SignUpService {
 
     }
     @Transactional
-    public SignUpResponseDTO signUpDriver(DriverSignupRequestDTO request)
-    {
-        if(accountRepository.existsByEmail(request.email()))
-        {
+    public SignUpResponseDTO signUpDriver(DriverSignupRequestDTO request) {
+        if(accountRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistedException("Driver already exists");
         }
-        if(driverProfileRepository.existsByLicenseNumber(request.licenseNumber()))
-        {
+        if(driverProfileRepository.existsByLicenseNumber(request.licenseNumber())) {
             throw new UserAlreadyExistedException("License already exists");
         }
 
@@ -135,19 +134,33 @@ public class SignUpService {
                 .role(Role.DRIVER)
                 .status(AccountStatus.ACTIVE)
                 .build();
-
         accountRepository.save(account);
 
+        // 1. Create the Driver Profile (Verified by Provider)
         DriverProfile driver = DriverProfile.builder()
                 .account(account)
                 .serviceProvider(provider)
                 .fullName(request.fullName())
                 .licenseNumber(request.licenseNumber())
                 .build();
-        driverProfileRepository.save(driver);
+        driver = driverProfileRepository.save(driver);
 
-        return new SignUpResponseDTO("Driver registered successfully", request.email(), "DRIVER");
+        // 2. Create the Driver's Personal Ambulance
+        Ambulance ambulance = Ambulance.builder()
+                .currentDriver(driver) // Linked exclusively to the driver
+                .vehicleNumber(request.vehicleNumber())
+                .vehicleType(request.vehicleType())
+                .capacity(1)
+                // Default coordinates (can be updated via GPS later)
+                .currentLatitude(22.5726)
+                .currentLongitude(88.3639)
+                .status(AmbulanceStatus.OFFLINE) // Offline until they toggle shift status
+                .isActive(true)
+                .build();
 
+        ambulanceRepository.save(ambulance);
+
+        return new SignUpResponseDTO("Driver and personalized ambulance registered successfully", request.email(), "DRIVER");
     }
 
     @Transactional

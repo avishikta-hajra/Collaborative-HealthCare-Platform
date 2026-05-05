@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import { LogOut, Video, Mic, PhoneOff, Send, Users, Activity } from 'lucide-react';
+import { LogOut, Video, Mic, PhoneOff, Send, Users, Activity, ArrowLeft } from 'lucide-react';
 import { authenticatedFetch, getAuthSession } from '../services/authApi';
 
 import VideoRoom from "./VideoRoom";
@@ -84,7 +84,7 @@ export default function DoctorDashboard() {
     };
 
     const handleEndCall = () => {
-        // --- NEW: Tell the backend to close the session ---
+        // Tell the backend to close the session
         if (activeSession) {
             authenticatedFetch(`/api/consultations/${activeSession.sessionId}/end`, {
                 method: "POST"
@@ -105,69 +105,95 @@ export default function DoctorDashboard() {
     const handleLogout = () => {
         localStorage.removeItem("healthbridge.auth");
         sessionStorage.removeItem("healthbridge.auth");
-        navigate('/login?portal=doctor'); // <-- Changed from ?portal=admin
+        navigate('/login?portal=doctor');
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
-            {/* Navbar */}
-            <div className="bg-blue-950 text-white px-6 py-4 flex justify-between items-center shadow-md">
-                <div className="font-bold text-xl flex items-center gap-2">
-                    <Activity className="text-cyan-400" /> Doctor Portal
+        <div className="min-h-screen font-sans text-slate-800 bg-slate-50 border-t-2 pt-24 pb-16 px-6 lg:px-10 flex flex-col">
+            {/* Top Navbar */}
+            <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
+                <div className="w-full flex justify-between items-center">
+                    <div className="flex items-center text-slate-600 text-[16px] font-semibold tracking-widest py-4 gap-4">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="flex items-center hover:text-cyan-700 transition-colors cursor-pointer"
+                            aria-label="Go back home"
+                        >
+                            <ArrowLeft className="w-5 h-5 mr-2" />
+                        </button>
+                        <div className="flex items-center pl-4 border-l-2 border-slate-300">
+                            <Activity className="w-5 h-5 mr-2 text-cyan-600" /> Doctor Workspace
+                        </div>
+                    </div>
+                    <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 hover:text-red-700 font-bold transition-colors cursor-pointer">
+                        <LogOut className="w-5 h-5" /> Sign Out
+                    </button>
                 </div>
-                <button onClick={handleLogout} className="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold transition-colors">
-                    <LogOut className="w-5 h-5" /> Sign Out
-                </button>
             </div>
 
-            <div className="flex flex-1 p-6 gap-6 max-w-7xl mx-auto w-full">
+            {/* Page Header */}
+            <div className="text-center mt-4 mb-10">
+                <h1 className="font-poppins text-3xl md:text-4xl font-bold text-blue-950 tracking-widest mb-3">
+                    Telemedicine <span className="text-blue-900">Portal</span>
+                </h1>
+                <p className="text-slate-600 text-[18px] leading-relaxed max-w-5xl mx-auto mb-6">
+                    Manage your patient queue and conduct virtual consultations seamlessly.
+                </p>
+            </div>
+
+            <div className="flex flex-1 gap-6 max-w-7xl mx-auto w-full relative z-10 flex-col lg:flex-row">
                 {/* Left: Patient Queue */}
-                <div className="w-1/3 flex flex-col gap-4">
-                    <div className="bg-white rounded-2xl shadow-md border-2 border-sky-200 p-5">
-                        <h2 className="text-lg font-bold text-blue-950 mb-4 flex items-center gap-2">
-                            <Users className="text-cyan-600 w-5 h-5" /> Waiting Room ({queue.length})
+                <div className="w-full lg:w-1/3 flex flex-col gap-4">
+                    <div className="bg-white rounded-3xl shadow-xl border-2 border-sky-700 p-6 flex flex-col h-[550px]">
+                        <h2 className="text-xl font-bold text-blue-950 mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <Users className="text-cyan-600 w-6 h-6" /> Waiting Room ({queue.length})
                         </h2>
-                        <div className="space-y-3">
+                        <div className="space-y-3 overflow-y-auto flex-1 pr-2 custom-scrollbar">
                             {queue.map((req, idx) => (
-                                <div key={idx} className="p-2.5 border border-slate-200 rounded-lg bg-slate-50 hover:border-cyan-400 transition-colors">
-                                    <div className="text-[14px] font-bold text-blue-950">{req.patientName}</div>
-                                    <div className="text-[12px] text-slate-500 line-clamp-1 mb-2">Symptoms: {req.symptoms}</div>
+                                <div key={idx} className="p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:border-cyan-400 hover:shadow-md transition-all duration-300">
+                                    <div className="text-[16px] font-bold text-blue-950">{req.patientName}</div>
+                                    <div className="text-[13px] text-slate-500 line-clamp-2 mb-3 mt-1">Symptoms: {req.symptoms}</div>
                                     <button
                                         onClick={() => handleJoinCall(req)}
-                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-1.5 rounded-md text-[12px] font-bold shadow-sm cursor-pointer"
+                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-xl text-[14px] font-bold shadow-md cursor-pointer transition-colors"
                                     >
                                         Join Session
                                     </button>
                                 </div>
                             ))}
-                            {queue.length === 0 && <p className="text-slate-500 text-sm text-center py-4">No pending consultations.</p>}
+                            {queue.length === 0 && (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-70">
+                                    <Users className="w-12 h-12 mb-3" />
+                                    <p className="text-sm text-center">No pending consultations.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Right: Active Call Room */}
-                <div className="w-2/3 bg-white rounded-2xl shadow-xl border-2 border-sky-700 overflow-hidden flex flex-col">
+                <div className="w-full lg:w-2/3 bg-white rounded-3xl shadow-xl border-2 border-sky-700 overflow-hidden flex flex-col h-[550px]">
                     {activeSession ? (
                         <>
                             {/* Video Stage */}
-                            <div className="h-96 bg-slate-900 relative flex items-center justify-center overflow-hidden">
+                            <div className="h-[280px] bg-slate-900 relative flex items-center justify-center overflow-hidden shrink-0 border-b-2 border-slate-800">
                                 <VideoRoom
                                     roomId={activeSession.sessionId.toString()}
-                                    userId={`doctor-${activeSession.sessionId}`} // <-- CHANGED from Date.now()
+                                    userId={`doctor-${activeSession.sessionId}`}
                                     userName="Dr. Mehta"
                                     onLeave={handleEndCall}
                                 />
                             </div>
 
                             {/* Chat Area */}
-                            <div className="flex-1 flex flex-col bg-slate-50 min-h-[300px]">
-                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
                                     {messages.map((msg, idx) => (
                                         <div key={idx} className={`flex ${msg.senderType === 'DOCTOR' ? 'justify-end' : 'justify-start'}`}>
                                             {msg.senderType === 'SYSTEM' ? (
                                                 <div className="w-full text-center text-xs font-bold uppercase text-slate-400 my-2">{msg.text}</div>
                                             ) : (
-                                                <div className={`max-w-[70%] rounded-xl p-3 text-[14px] shadow-sm ${msg.senderType === 'DOCTOR' ? 'bg-blue-950 text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm'}`}>
+                                                <div className={`max-w-[70%] rounded-2xl p-3 text-[14px] shadow-sm ${msg.senderType === 'DOCTOR' ? 'bg-blue-950 text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm'}`}>
                                                     {msg.text}
                                                 </div>
                                             )}
@@ -177,22 +203,24 @@ export default function DoctorDashboard() {
                                 </div>
 
                                 {/* Input Box */}
-                                <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-200 flex gap-3">
+                                <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-200 flex gap-3 shrink-0">
                                     <input
                                         type="text"
                                         value={chatInput}
                                         onChange={(e) => setChatInput(e.target.value)}
                                         placeholder="Type clinical advice..."
-                                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none"
+                                        className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none"
                                     />
-                                    <button type="submit" className="px-5 bg-blue-950 hover:bg-blue-800 text-white rounded-xl font-bold shadow-md"><Send className="w-4 h-4" /></button>
+                                    <button type="submit" className="px-6 bg-blue-950 hover:bg-blue-800 text-white rounded-xl font-bold shadow-md cursor-pointer transition-colors flex items-center justify-center">
+                                        <Send className="w-5 h-5" />
+                                    </button>
                                 </form>
                             </div>
                         </>
                     ) : (
-                        <div className="flex-1 flex items-center justify-center text-slate-400 flex-col">
-                            <Activity className="w-16 h-16 mb-4 opacity-20" />
-                            <p className="font-medium text-lg">Select a patient from the queue to begin.</p>
+                        <div className="flex-1 flex items-center justify-center text-slate-400 flex-col bg-slate-50/50">
+                            <Activity className="w-20 h-20 mb-6 opacity-20" />
+                            <p className="font-medium text-xl text-slate-500">Select a patient from the queue to begin.</p>
                         </div>
                     )}
                 </div>

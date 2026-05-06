@@ -5,7 +5,7 @@ import About from "./About";
 import {
     Menu, X, Video, Hospital,
     Ambulance, AlertTriangle, Activity,
-    Landmark, ChevronRight, User, LogOut
+    Landmark, ChevronRight, ChevronDown, User, LogOut
 } from "lucide-react";
 import { getAuthSession } from "../services/authApi"; // Import auth helper
 
@@ -49,11 +49,68 @@ const features = [
 ];
 
 
+const faqs = [
+    {
+        question: "Is HealthBridge free to use?",
+        answer: "Yes, HealthBridge is completely free for all users. We are committed to providing accessible healthcare solutions without any cost barriers."
+    },
+    {
+        question: "What services does HealthBridge offer?",
+        answer: "HealthBridge offers a wide range of services including telemedicine consultations, hospital locator, live ambulance tracking, community health reporting, real-time listings of medical resources, and information on government healthcare schemes."
+    },
+    {
+        question: "How do I sign up for HealthBridge?",
+        answer: "You can sign up for HealthBridge by clicking the \"Sign In\" button at the top right corner of the homepage. You will be directed to a portal selection page where you can choose your user type and create an account."
+    },
+    {
+        question: "Is my personal information secure on HealthBridge?",
+        answer: "Yes, we take your privacy and security seriously. HealthBridge uses industry-standard encryption and security practices to protect your personal information. We do not share your data with third parties without your consent."
+    },
+    {
+        question: "How does the live ambulance tracking work?",
+        answer: "Our platform uses real-time GPS tracking to connect you with the nearest available ambulance. Once dispatched, you can monitor the ambulance's route and ETA directly from your dashboard."
+    },
+    {
+        question: "Can I use HealthBridge for emergency situations?",
+        answer: "Yes, HealthBridge provides quick access to emergency ambulance services and nearby hospital locations. The ambulance module can be accessed quickly to save crucial time during emergencies."
+    },
+    {
+        question: "What is the Community Health Reporting Feature?",
+        answer: "It's a crowdsourced tool where users can report local health incidents or outbreaks. This helps the community stay informed, and allows local health bodies to monitor and address potential risks early."
+    },
+    {
+        question: "Why there is Gamified Module Feature?",
+        answer: "We included the Gamified Module to make learning about health and wellness engaging and interactive. It features a variety of quizzes ranging from first aid and nutrition to mental health, allowing users to challenge their knowledge, keep track of their high scores, and learn practical health tips in a fun, pressure-free environment."
+    },
+    {
+        question: "How can I check my eligibility for government health schemes?",
+        answer: "You can use our Eligibility Assessor in the Government Schemes section. Simply input your state, income range, and occupation category, and the system will instantly filter and display the schemes you are most likely eligible for."
+    },
+    {
+        question: "What information does the Live Listings feature provide?",
+        answer: "The Live Listings feature provides real-time availability of crucial medical resources at nearby hospitals. This includes the number of available ICU beds, oxygen cylinders, and specific blood group units, helping you make informed decisions during critical situations."
+    },
+    {
+        question: "What happens if a doctor is currently in a call when I need a consultation?",
+        answer: "If a doctor's status is 'In Call', you can still join their virtual waitlist. Our platform provides a live queue position and an estimated wait time, automatically connecting you as soon as the doctor finishes their current consultation."
+    },
+    // {
+    //     question: "How do I receive my prescription after a virtual consultation?",
+    //     answer: "After your telemedicine session, the doctor can generate a digital prescription (E-Rx) directly through the platform. This will be instantly accessible in your clinical panel, where you can view, save, or download it as a PDF."
+    // },
+    // {
+    //     question: "Do I need to download a separate mobile app to use HealthBridge?",
+    //     answer: "No, HealthBridge is a fully responsive web-based platform. You can access all of our services—including video consultations and live ambulance tracking—directly through the web browser on your desktop, tablet, or smartphone."
+    // }
+
+];
+
 export default function HomePage() {
     const [scrolled, setScrolled] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [phraseIndex, setPhraseIndex] = useState(0);
     const [activeTab, setActiveTab] = useState('home');
+    const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
     // Auth States
     const [authSession, setAuthSession] = useState(null);
@@ -256,6 +313,31 @@ export default function HomePage() {
                                         <div onClick={() => navigate(f.route)} className="flex items-center gap-1.5 text-blue-800 text-[16px] font-bold cursor-pointer hover:text-blue-950 transition-colors">
                                             Access Now
                                             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                    {/* FAQ SECTION */}
+                    <section className="relative bg-slate-50 px-4 md:px-10 lg:px-20 py-12 border-t-2 border-blue-300">
+                        <div className="max-w-4xl mx-auto relative z-10">
+                            <div className="text-center mb-10">
+                                <h2 className="font-poppins text-2xl md:text-3xl font-bold text-blue-950 tracking-widest mb-3">Frequently Asked Questions</h2>
+                                <span className="inline-block text-cyan-700 text-xl font-bold tracking-widest uppercase">Your Questions Answered</span>
+                            </div>
+                            <div className="space-y-4">
+                                {faqs.map((faq, index) => (
+                                    <div key={index} className="border-2 border-blue-200 rounded-xl overflow-hidden hover:bg-blue-50 transition-colors">
+                                        <button
+                                            onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                                            className="w-full p-5 md:p-6 text-left flex justify-between items-center cursor-pointer focus:outline-none"
+                                        >
+                                            <h3 className="text-[16px] md:text-[18px] font-bold text-blue-900 pr-4">{faq.question}</h3>
+                                            <ChevronDown className={`w-5 h-5 text-blue-900 transition-transform duration-300 shrink-0 ${openFaqIndex === index ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        <div className={`transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-100 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                                            <p className="text-slate-600 text-[15px] md:text-[16px] leading-relaxed px-5 pb-5 md:px-6 md:pb-6">{faq.answer}</p>
                                         </div>
                                     </div>
                                 ))}

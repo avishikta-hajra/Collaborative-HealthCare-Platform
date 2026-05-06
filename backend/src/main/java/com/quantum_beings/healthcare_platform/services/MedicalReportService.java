@@ -27,18 +27,21 @@ public class MedicalReportService {
     private final PdfTextExtractionService pdfTextExtractionService;
     private final MedicalReportChunkRepository medicalReportChunkRepository;
     private final MedicalReportChunkingService medicalReportChunkingService;
+    private final MedicalReportEmbeddingService medicalReportEmbeddingService;
+
 
 
 
     public MedicalReportService(MedicalReportRepository medicalReportRepository,
                                 PatientProfileRepository patientProfileRepository,
-                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService, MedicalReportChunkRepository medicalReportChunkRepository, MedicalReportChunkingService medicalReportChunkingService) {
+                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService, MedicalReportChunkRepository medicalReportChunkRepository, MedicalReportChunkingService medicalReportChunkingService, MedicalReportEmbeddingService medicalReportEmbeddingService) {
         this.medicalReportRepository = medicalReportRepository;
         this.patientProfileRepository = patientProfileRepository;
         this.medicalReportStorageService = medicalReportStorageService;
         this.pdfTextExtractionService = pdfTextExtractionService;
         this.medicalReportChunkRepository = medicalReportChunkRepository;
         this.medicalReportChunkingService = medicalReportChunkingService;
+        this.medicalReportEmbeddingService = medicalReportEmbeddingService;
     }
 
     public UploadMedicalReportResponseDTO uploadReport(MultipartFile file,
@@ -90,7 +93,10 @@ public class MedicalReportService {
                 );
             }
 
-            medicalReportChunkRepository.saveAll(reportChunks);
+
+            List<MedicalReportChunk> savedChunks = medicalReportChunkRepository.saveAll(reportChunks);
+            medicalReportEmbeddingService.embedReportChunks(savedReport, savedChunks);
+
         }
 
 

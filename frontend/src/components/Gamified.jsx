@@ -879,8 +879,8 @@ export default function Gamified() {
             {/* --- TOP NAVIGATION BAR --- */}
             <div className="fixed top-0 left-0 right-0 z-40 px-4 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
                 <div className="w-full flex justify-between items-center">
-                    <button onClick={() => navigate('/')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer">
-                        <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
+                    <button onClick={() => navigate('/gamification')} className="flex items-center text-slate-600 text-[16px] font-semibold hover:text-cyan-700 tracking-widest transition-colors py-4 cursor-pointer">
+                        <ArrowLeft className="w-5 h-5 mr-2" /> Back to Module Selection
                     </button>
                 </div>
             </div>

@@ -53,7 +53,7 @@ public class ConsultationController {
                     .patient(patient)
                     .doctor(doctor)
                     .symptoms(request.symptoms())
-                    .status(ConsultationStatus.ACTIVE)
+                    .status(ConsultationStatus.WAITING)
                     .build();
 
             session = sessionRepository.save(session);

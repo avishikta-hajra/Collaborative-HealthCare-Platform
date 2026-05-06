@@ -52,4 +52,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return account.getStatus() == AccountStatus.ACTIVE;
     }
+
+    public Account getAccount() {
+        return this.account;
+    }
 }

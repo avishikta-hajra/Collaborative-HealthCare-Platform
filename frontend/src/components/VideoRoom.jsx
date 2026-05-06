@@ -3,34 +3,43 @@ import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
 export default function VideoRoom({ roomId, userId, userName, onLeave }) {
     const videoContainerRef = useRef(null);
+    const zpRef = useRef(null); // Reference to hold the Zego instance for cleanup
 
     useEffect(() => {
         if (!videoContainerRef.current) return;
 
         const myMeeting = async (element) => {
-            // 1. Enter your ZEGOCLOUD credentials here
-            const appID = Number(import.meta.env.VITE_ZEGO_APP_ID); // Note: ZEGOCLOUD needs AppID as a Number, so we wrap it in Number()
-            const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET; // Passed as String
+            const appID = Number(import.meta.env.VITE_ZEGO_APP_ID);
+            const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
 
-            // 2. Generate a secure token tied to this specific consultation ID
+            if (!appID || !serverSecret) {
+                console.error("ZegoCloud credentials missing in .env file!");
+                return;
+            }
+
+            // FORCE all variables to be Strings. ZegoCloud will fail silently if given numbers or undefined.
+            const safeRoomId = String(roomId || "fallback-room");
+            const safeUserId = String(userId || `user-${Date.now()}`);
+            const safeUserName = String(userName || "User");
+
             const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
                 appID,
                 serverSecret,
-                roomId,
-                userId,
-                userName
+                safeRoomId,
+                safeUserId,
+                safeUserName
             );
 
-            // 3. Initialize the ZEGOCLOUD instance
+            // Initialize the ZEGOCLOUD instance
             const zc = ZegoUIKitPrebuilt.create(kitToken);
+            zpRef.current = zc; // Save reference so we can destroy it later
 
-            // 4. Join the room and mount the UI into our div
             zc.joinRoom({
                 container: element,
                 scenario: {
-                    mode: ZegoUIKitPrebuilt.OneONoneCall, // Optimized for 1-on-1 telehealth
+                    mode: ZegoUIKitPrebuilt.OneONoneCall,
                 },
-                showPreJoinView: false, // Skips the camera preview screen
+                showPreJoinView: false,
                 showScreenSharingButton: false,
                 turnOnMicrophoneWhenJoining: true,
                 turnOnCameraWhenJoining: true,
@@ -43,8 +52,11 @@ export default function VideoRoom({ roomId, userId, userName, onLeave }) {
 
         myMeeting(videoContainerRef.current);
 
-        // Cleanup when the component unmounts
+        // CLEANUP: Prevents React 18 from creating ghost instances and locking the camera
         return () => {
+            if (zpRef.current) {
+                zpRef.current.destroy();
+            }
             if (videoContainerRef.current) {
                 videoContainerRef.current.innerHTML = "";
             }

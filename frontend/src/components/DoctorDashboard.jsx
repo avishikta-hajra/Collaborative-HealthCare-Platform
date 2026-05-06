@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import { LogOut, Video, Mic, PhoneOff, Send, Users, Activity, ArrowLeft, MessageSquare } from 'lucide-react';
-import { authenticatedFetch, getAuthSession } from '../services/authApi';
+import { LogOut, Send, Users, Activity, ArrowLeft, MessageSquare } from 'lucide-react';
+import { authenticatedFetch } from '../services/authApi';
 
 import VideoRoom from "./VideoRoom";
 
@@ -14,50 +14,84 @@ export default function DoctorDashboard() {
     const [stompClient, setStompClient] = useState(null);
     const [messages, setMessages] = useState([]);
     const [chatInput, setChatInput] = useState("");
-    const chatEndRef = useRef(null);
+    const [isOnline, setIsOnline] = useState(true);
+    const chatContainerRef = useRef(null);
 
-    // Scroll to bottom of chat
+    // Scroll to bottom of chat smoothly
     useEffect(() => {
-        if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     }, [messages]);
 
-    // Fetch the queue on load
+    // Fetch the queue on load and poll every 5 seconds
     useEffect(() => {
         const fetchQueue = async () => {
             try {
                 const data = await authenticatedFetch("/api/consultations/doctor/queue");
-                setQueue(data);
+                if (Array.isArray(data)) setQueue(data);
             } catch (error) {
                 console.error("Failed to fetch queue", error);
             }
         };
-        fetchQueue();
+
+        fetchQueue(); // Fetch immediately
+        const interval = setInterval(fetchQueue, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(interval); // Cleanup on unmount
     }, []);
 
-    // Cleanup WebSocket
+    // Cleanup WebSocket on unmount
     useEffect(() => {
         return () => { if (stompClient) stompClient.deactivate(); };
     }, [stompClient]);
 
     const handleJoinCall = async (session) => {
-        setActiveSession(session);
-        setQueue(prevQueue => prevQueue.filter(req => req.sessionId !== session.sessionId));
+        // SAFEGUARD: Check if the backend gave us 'sessionId' or just 'id'
+        const actualSessionId = session.sessionId || session.id;
+
+        // Save an updated session object with the guaranteed ID
+        const activeSessionData = { ...session, sessionId: actualSessionId };
+        setActiveSession(activeSessionData);
+
+        setQueue(prevQueue => prevQueue.filter(req => (req.sessionId || req.id) !== actualSessionId));
+
         // Fetch Chat History
         try {
-            const history = await authenticatedFetch(`/api/consultations/${session.sessionId}/messages`);
+            const history = await authenticatedFetch(`/api/consultations/${actualSessionId}/messages`);
             setMessages([...history, { senderType: "SYSTEM", text: `Joined consultation with ${session.patientName}.` }]);
         } catch (error) {
             setMessages([{ senderType: "SYSTEM", text: `Joined consultation with ${session.patientName}.` }]);
         }
 
         // Connect WebSocket
+        // Connect WebSocket
         const socket = new SockJS("http://localhost:8080/ws-telemedicine");
         const client = new Client({
             webSocketFactory: () => socket,
             onConnect: () => {
-                client.subscribe(`/topic/session/${session.sessionId}`, (message) => {
+                client.subscribe(`/topic/session/${actualSessionId}`, (message) => {
                     const receivedMsg = JSON.parse(message.body);
-                    setMessages(prev => [...prev, receivedMsg]);
+                    // Ignore our own hidden system signals in the chat UI
+                    if (receivedMsg.text !== 'DOCTOR_JOINED') {
+                        setMessages(prev => [...prev, receivedMsg]);
+                    }
+                });
+
+                // NEW: NOTIFY PATIENT THAT WE JOINED!
+                const joinMsg = {
+                    sessionId: actualSessionId,
+                    senderType: 'SYSTEM',
+                    text: 'DOCTOR_JOINED',
+                    timestamp: new Date().toISOString()
+                };
+
+                client.publish({
+                    destination: `/app/chat/${actualSessionId}`,
+                    body: JSON.stringify(joinMsg)
                 });
             }
         });
@@ -71,7 +105,7 @@ export default function DoctorDashboard() {
 
         const messagePayload = {
             sessionId: activeSession.sessionId,
-            senderType: 'DOCTOR', // Tagged as doctor!
+            senderType: 'DOCTOR',
             text: chatInput,
             timestamp: new Date().toISOString()
         };
@@ -84,28 +118,47 @@ export default function DoctorDashboard() {
     };
 
     const handleEndCall = () => {
-        // Tell the backend to close the session
         if (activeSession) {
             authenticatedFetch(`/api/consultations/${activeSession.sessionId}/end`, {
                 method: "POST"
             }).catch(err => console.error("Failed to update DB:", err));
         }
 
-        // Disconnect the chat WebSocket
         if (stompClient) {
             stompClient.deactivate();
             setStompClient(null);
         }
-        // Clear the screen and return to the empty waiting room view
+
         setActiveSession(null);
         setMessages([]);
         setChatInput("");
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("healthbridge.auth");
-        sessionStorage.removeItem("healthbridge.auth");
-        navigate('/login?portal=doctor');
+    const toggleStatus = async () => {
+        const newStatus = !isOnline;
+        setIsOnline(newStatus);
+        try {
+            await authenticatedFetch(`/api/doctors/status?status=${newStatus ? 'AVAILABLE' : 'OFFLINE'}`, {
+                method: 'PUT'
+            });
+        } catch (error) {
+            console.error("Failed to update status");
+            setIsOnline(!newStatus);
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await authenticatedFetch(`/api/doctors/status?status=OFFLINE`, {
+                method: 'PUT'
+            });
+        } catch (e) {
+            console.error("Status update failed on logout");
+        } finally {
+            localStorage.removeItem("healthbridge.auth");
+            sessionStorage.removeItem("healthbridge.auth");
+            navigate('/login?portal=doctor');
+        }
     };
 
     return (
@@ -125,9 +178,22 @@ export default function DoctorDashboard() {
                             <Activity className="w-5 h-5 mr-2 text-cyan-600" /> Doctor Workspace
                         </div>
                     </div>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 hover:text-red-700 font-bold transition-colors cursor-pointer">
-                        <LogOut className="w-5 h-5" /> Sign Out
-                    </button>
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <span className={`text-sm font-bold ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                {isOnline ? 'Receiving Patients' : 'Offline'}
+                            </span>
+                            <button
+                                onClick={toggleStatus}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isOnline ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+                        <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 hover:text-red-700 font-bold transition-colors cursor-pointer">
+                            <LogOut className="w-5 h-5" /> Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -136,7 +202,7 @@ export default function DoctorDashboard() {
                 <h1 className="font-poppins text-3xl md:text-4xl font-bold text-blue-950 tracking-widest mb-3">
                     Telemedicine <span className="text-blue-900">Portal</span>
                 </h1>
-                <p className="text-slate-600 text-[18px] leading-relaxed max-w-5xl mx-auto mb-6">
+                <p className="text-slate-600 text-[18px] leading-relaxed max-w-5xl mx-auto mb-1">
                     Manage your patient queue and conduct virtual consultations seamlessly.
                 </p>
             </div>
@@ -164,14 +230,13 @@ export default function DoctorDashboard() {
                         </div>
 
                         {/* Bottom: Left Chat, Right Video */}
-                        <div className="w-full h-[650px] lg:h-[750px] bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-
+                        <div className="w-full h-[calc(100vh-140px)] animate-fade-in bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row mt-2">
                             {/* Left: Chat Area */}
-                            <div className="w-full lg:w-[350px] xl:w-[420px] bg-white border-r-2 border-sky-200 flex flex-col h-[400px] lg:h-full">
+                            <div className="w-full lg:w-[350px] xl:w-[420px] bg-white border-l-2 border-sky-200 flex flex-col h-1/2 lg:h-full">
                                 <div className="bg-blue-50/50 py-4 border-b border-sky-200 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest text-slate-600 shadow-inner shrink-0">
                                     <MessageSquare className="w-4 h-4" /> Clinical Chat
                                 </div>
-                                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50">
+                                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50">
                                     {messages.map((msg, idx) => (
                                         <div key={idx} className={`flex ${msg.senderType === 'DOCTOR' ? 'justify-end' : 'justify-start'}`}>
                                             {msg.senderType === 'SYSTEM' ? (
@@ -183,7 +248,6 @@ export default function DoctorDashboard() {
                                             )}
                                         </div>
                                     ))}
-                                    <div ref={chatEndRef} />
                                 </div>
 
                                 {/* Input Box */}
@@ -202,12 +266,13 @@ export default function DoctorDashboard() {
                             </div>
 
                             {/* Right: Video Stage */}
-                            <div className="flex-1 bg-slate-950 relative overflow-hidden h-full">
+                            <div className="flex-1 bg-slate-950 flex flex-col relative overflow-hidden">
                                 <div className="absolute inset-0">
+                                    {/* FIXED BUG: Passed correct variables tied to activeSession */}
                                     <VideoRoom
-                                        roomId={activeSession.sessionId.toString()}
+                                        roomId={String(activeSession.sessionId)}
                                         userId={`doctor-${activeSession.sessionId}`}
-                                        userName="Dr. Mehta"
+                                        userName="Doctor"
                                         onLeave={handleEndCall}
                                     />
                                 </div>

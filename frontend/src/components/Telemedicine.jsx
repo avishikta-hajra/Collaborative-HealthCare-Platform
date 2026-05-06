@@ -53,7 +53,7 @@ export default function Telemedicine() {
     const [activeTab, setActiveTab] = useState("chat");
     const [chatInput, setChatInput] = useState("");
     const [messages, setMessages] = useState([]);
-    const chatEndRef = useRef(null);
+    const chatContainerRef = useRef(null);
 
     // for distinguishing between doctor or patient login
     useEffect(() => {
@@ -73,9 +73,13 @@ export default function Telemedicine() {
         }
     }, [navigate]);
 
-    // Auto-scroll chat
     useEffect(() => {
-        if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     }, [messages, activeTab]);
 
     // Cleanup WebSocket on unmount
@@ -139,18 +143,13 @@ export default function Telemedicine() {
         }
     }, []);
 
-    // Simulated Waitlist Queue progression
+    // Waitlist Queue progression
     useEffect(() => {
         let timer;
         if (viewState === "waiting_room" && currentQueuePos > 0) {
             timer = setTimeout(() => {
                 setCurrentQueuePos(prev => prev - 1);
             }, 3000);
-        } else if (viewState === "waiting_room" && currentQueuePos === 0) {
-            setViewState("connecting");
-            const mockSessionId = "101";
-            connectWebSocket(mockSessionId);
-            setTimeout(() => connectToCall(), 1500);
         }
         return () => clearTimeout(timer);
     }, [viewState, currentQueuePos]);
@@ -172,7 +171,13 @@ export default function Telemedicine() {
 
                 client.subscribe(`/topic/session/${sessionId}`, (message) => {
                     const receivedMsg = JSON.parse(message.body);
-                    setMessages(prev => [...prev, receivedMsg]);
+
+                    if (receivedMsg.text === 'DOCTOR_JOINED') {
+                        connectToCall();
+                        setMessages(prev => [...prev, { senderType: 'SYSTEM', text: 'Doctor has joined the consultation.' }]);
+                    } else {
+                        setMessages(prev => [...prev, receivedMsg]);
+                    }
                 });
             },
             onStompError: (frame) => {
@@ -226,8 +231,9 @@ export default function Telemedicine() {
                 // 3. CONNECT TO THE WEBSOCKET USING THE REAL ID
                 connectWebSocket(realSessionId);
 
-                // 4. ENTER THE CALL
-                setTimeout(() => connectToCall(), 1500);
+                // 4. ENTER WAITING ROOM (Do NOT call connectToCall yet)
+                setCurrentQueuePos(0);
+                setViewState("waiting_room");
 
             } catch (error) {
                 console.error("Failed to start session:", error);
@@ -632,13 +638,7 @@ export default function Telemedicine() {
                 {/* STATE 4: WAITING ROOM */}
                 {viewState === "waiting_room" && (
                     <div className="h-[65vh] flex flex-col items-center justify-center text-center max-w-lg mx-auto animate-fade-in">
-                        <div className="w-24 h-24 bg-amber-50 rounded-3xl flex items-center justify-center border-4 border-amber-200 shadow-lg mb-8 relative">
-                            <Hourglass className="w-10 h-10 text-amber-500 animate-pulse" />
-                            {currentQueuePos === 0 && (
-                                <div className="absolute inset-0 border-4 border-cyan-400 rounded-3xl animate-ping opacity-50"></div>
-                            )}
-                        </div>
-                        <h2 className="font-poppins text-3xl font-bold text-blue-950 mb-3">Virtual Waiting Room</h2>
+                        <h2 className="font-poppins text-3xl font-bold text-blue-950 mt-5 mb-2">Virtual Waiting Room</h2>
                         <p className="text-slate-600 text-[16px] mb-8">{selectedDoctor?.name || 'Your Doctor'} is wrapping up a consultation.</p>
 
                         <div className="bg-white border-sky-700 border-2 rounded-3xl p-8 w-full shadow-xl">
@@ -670,20 +670,21 @@ export default function Telemedicine() {
 
                 {/* STATE 6: ACTIVE CALL */}
                 {viewState === "active" && selectedDoctor && (
-                    <div className="w-full h-[650px] lg:h-[750px] animate-fade-in bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row mt-4">
-
+                    <div className="w-full h-[calc(100vh-140px)] animate-fade-in bg-white border-sky-700 border-2 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row mt-2">
                         {/* Left: Main Video Stage */}
                         <div className="flex-1 bg-slate-950 flex flex-col relative overflow-hidden">
-                            <VideoRoom
-                                roomId={activeSessionId}
-                                userId={`patient-${activeSessionId}`} // <-- CHANGED from Date.now()
-                                userName="Patient"
-                                onLeave={endCall}
-                            />
+                            <div className="absolute inset-0">
+                                <VideoRoom
+                                    roomId={String(activeSessionId)}
+                                    userId={`patient-${activeSessionId}`}
+                                    userName="Patient"
+                                    onLeave={endCall}
+                                />
+                            </div>
                         </div>
 
                         {/* Right: Clinical Panel */}
-                        <div className="w-full lg:w-[350px] xl:w-[420px] bg-white border-l-2 border-sky-200 flex flex-col h-[400px] lg:h-full">
+                        <div className="w-full lg:w-[350px] xl:w-[420px] bg-white border-l-2 border-sky-200 flex flex-col h-1/2 lg:h-full">
                             <div className="flex border-b-2 border-sky-200 bg-blue-50/50 text-[13px] font-bold uppercase tracking-widest text-slate-600">
                                 <button onClick={() => setActiveTab("chat")} className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors cursor-pointer ${activeTab === "chat" ? "text-cyan-700 border-b-2 border-cyan-600 bg-white shadow-inner" : "border-b-2 border-transparent hover:text-blue-900"}`}>
                                     <MessageSquare className="w-4 h-4" /> Chat
@@ -695,7 +696,7 @@ export default function Telemedicine() {
 
                             {activeTab === "chat" && (
                                 <div className="flex flex-col flex-1 h-full overflow-hidden bg-slate-50/50">
-                                    <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                                    <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-5 space-y-4">
                                         {messages.map((msg, idx) => (
                                             <div key={idx} className={`flex ${msg.senderType === 'USER' || msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                                                 {msg.senderType === 'SYSTEM' || msg.sender === 'system' ? (
@@ -707,7 +708,6 @@ export default function Telemedicine() {
                                                 )}
                                             </div>
                                         ))}
-                                        <div ref={chatEndRef} />
                                     </div>
                                     <div className="p-4 border-t-2 border-sky-200 bg-white">
                                         <form onSubmit={handleSendMessage} className="flex gap-3">

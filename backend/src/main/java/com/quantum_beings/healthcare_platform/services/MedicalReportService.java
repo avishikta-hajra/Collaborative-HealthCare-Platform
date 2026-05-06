@@ -5,14 +5,17 @@ import com.quantum_beings.healthcare_platform.dto.MedicalReportListItemDTO;
 import com.quantum_beings.healthcare_platform.dto.StoredFileResult;
 import com.quantum_beings.healthcare_platform.dto.UploadMedicalReportResponseDTO;
 import com.quantum_beings.healthcare_platform.entity.MedicalReport;
+import com.quantum_beings.healthcare_platform.entity.MedicalReportChunk;
 import com.quantum_beings.healthcare_platform.entity.PatientProfile;
 import com.quantum_beings.healthcare_platform.enums.MedicalReportProcessingStatus;
+import com.quantum_beings.healthcare_platform.repository.MedicalReportChunkRepository;
 import com.quantum_beings.healthcare_platform.repository.MedicalReportRepository;
 import com.quantum_beings.healthcare_platform.repository.PatientProfileRepository;
 import com.quantum_beings.healthcare_platform.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,15 +25,20 @@ public class MedicalReportService {
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalReportStorageService medicalReportStorageService;
     private final PdfTextExtractionService pdfTextExtractionService;
+    private final MedicalReportChunkRepository medicalReportChunkRepository;
+    private final MedicalReportChunkingService medicalReportChunkingService;
+
 
 
     public MedicalReportService(MedicalReportRepository medicalReportRepository,
                                 PatientProfileRepository patientProfileRepository,
-                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService) {
+                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService, MedicalReportChunkRepository medicalReportChunkRepository, MedicalReportChunkingService medicalReportChunkingService) {
         this.medicalReportRepository = medicalReportRepository;
         this.patientProfileRepository = patientProfileRepository;
         this.medicalReportStorageService = medicalReportStorageService;
         this.pdfTextExtractionService = pdfTextExtractionService;
+        this.medicalReportChunkRepository = medicalReportChunkRepository;
+        this.medicalReportChunkingService = medicalReportChunkingService;
     }
 
     public UploadMedicalReportResponseDTO uploadReport(MultipartFile file,
@@ -66,6 +74,25 @@ public class MedicalReportService {
                 .build();
 
         MedicalReport savedReport = medicalReportRepository.save(medicalReport);
+
+        if (savedReport.getExtractedText() != null && !savedReport.getExtractedText().isBlank()) {
+            List<String> chunks = medicalReportChunkingService.chunkText(savedReport.getExtractedText());
+
+            List<MedicalReportChunk> reportChunks = new ArrayList<>();
+
+            for (int i = 0; i < chunks.size(); i++) {
+                reportChunks.add(
+                        MedicalReportChunk.builder()
+                                .medicalReport(savedReport)
+                                .chunkIndex(i)
+                                .chunkText(chunks.get(i))
+                                .build()
+                );
+            }
+
+            medicalReportChunkRepository.saveAll(reportChunks);
+        }
+
 
         return new UploadMedicalReportResponseDTO(
                 savedReport.getId(),

@@ -45,6 +45,24 @@ public class AmbulanceLocationService {
         this.driverProfileRepository = driverProfileRepository;
     }
 
+    private double calculateAverageRating(Ambulance ambulance) {
+        // Get all completed requests for this specific ambulance that have a rating
+        List<EmergencyRequest> ratedTrips = emergencyRequestRepository.findAll().stream()
+                .filter(req -> req.getAssignedAmbulance() != null
+                        && req.getAssignedAmbulance().getId().equals(ambulance.getId())
+                        && req.getRating() != null)
+                .collect(Collectors.toList());
+
+        if (ratedTrips.isEmpty()) {
+            return 5.0; // Default rating for new ambulances with no trips
+        }
+
+        double sum = 0;
+        for (EmergencyRequest trip : ratedTrips) {
+            sum += trip.getRating();
+        }
+        return Math.round((sum / ratedTrips.size()) * 10.0) / 10.0;
+    }
     public List<AmbulanceResponseDTO> getNearbyAmbulances(double userLat, double userLng, double radiusKm) {
         List<Ambulance> availableAmbulances = ambulanceRepository.findByStatusAndIsActiveTrue(AmbulanceStatus.AVAILABLE);
 
@@ -52,7 +70,7 @@ public class AmbulanceLocationService {
                 .map(amb -> {
                     double distKm = calculateHaversineDistance(userLat, userLng, amb.getCurrentLatitude(), amb.getCurrentLongitude()) * ROUTING_DETOUR_FACTOR;
                     int etaMinutes = (int) Math.round((distKm / AVERAGE_SPEED_KMPH) * 60);
-                    double mockRating = 4.0 + ((amb.getId() % 10) / 10.0);
+                    double dynamicRating = calculateAverageRating(amb);
 
                     // FIX: Safely route through the Driver to get the Service Provider's name
                     String providerName = (amb.getCurrentDriver() != null && amb.getCurrentDriver().getServiceProvider() != null)
@@ -65,7 +83,7 @@ public class AmbulanceLocationService {
                             .type(amb.getVehicleType())
                             .distance(df.format(distKm) + " km")
                             .eta(etaMinutes + " mins")
-                            .rating(Double.parseDouble(df.format(mockRating)))
+                            .rating(dynamicRating)
                             .lat(amb.getCurrentLatitude())
                             .lng(amb.getCurrentLongitude())
                             .build();
@@ -291,5 +309,19 @@ public class AmbulanceLocationService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    @Transactional
+    public void rateTrip(Long requestId, Integer rating, String review) {
+        EmergencyRequest order = emergencyRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Emergency Request not found"));
+
+        if (order.getStatus() != EmergencyRequestStatus.COMPLETED) {
+            throw new BadRequestException("Can only rate completed trips.");
+        }
+
+        order.setRating(rating);
+        order.setReviewComment(review);
+        emergencyRequestRepository.save(order);
     }
 }

@@ -4,7 +4,7 @@ import {
     ArrowLeft, MapPin, Phone, 
     Clock, AlertCircle, 
     CheckCircle2, Navigation, User, X, 
-    Truck, Activity, Info, Loader2, LocateFixed, Filter
+    Truck, Activity, Info, Loader2, LocateFixed, Filter, Star
 } from "lucide-react";
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
@@ -80,18 +80,22 @@ export default function AmbulanceService() {
         return saved ? parseInt(saved) : 0;
     });
 
-    const defaultCenter = [22.5726, 88.3639];
+    // Rating states
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [reviewText, setReviewText] = useState("");
+    const [hasRated, setHasRated] = useState(false);
 
-    const getAuthToken = () => {
-        const authDataStr = localStorage.getItem("healthbridge.auth") || sessionStorage.getItem("healthbridge.auth");
-        return authDataStr ? JSON.parse(authDataStr).accessToken : "";
-    };
+    const defaultCenter = [22.5726, 88.3639];
 
     const clearActiveTrip = () => {
         setDispatchState("idle");
         setActiveOrderId(null);
         setAssignedUnit(null);
         setEtaCountdown(0);
+        setRating(0);
+        setReviewText("");
+        setHasRated(false);
         sessionStorage.removeItem('dispatchState');
         sessionStorage.removeItem('activeOrderId');
         sessionStorage.removeItem('assignedUnit');
@@ -107,23 +111,14 @@ export default function AmbulanceService() {
         let interval;
         if (activeOrderId && dispatchState === "assigned") {
             const fetchStatus = () => {
-                fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/status`, {
-                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-                })
+                fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/status`)
                 .then(res => res.json())
                 .then(data => {
                     setTripDetails(data);
                     
-                    // FIX: Show a completed screen and reset automatically
                     if(data.status === "COMPLETED") {
                         setDispatchState("completed");
                         sessionStorage.setItem('dispatchState', "completed");
-                        
-                        // Automatically reset to ambulance selection page after 3.5 seconds
-                        setTimeout(() => {
-                            clearActiveTrip();
-                        }, 3500);
-
                     } else if (data.status === "CANCELLED") {
                         alert("This trip was cancelled.");
                         clearActiveTrip();
@@ -139,7 +134,7 @@ export default function AmbulanceService() {
     }, [activeOrderId, dispatchState]);
 
     const fetchNearbyAmbulances = (lat, lng) => {
-        fetch(`http://localhost:8080/api/ambulances/nearby?lat=${lat}&lng=${lng}&radius=20.0`, {
+        fetch(`http://localhost:8080/api/ambulances/nearby?lat=${lat}&lng=${lng}&radius=2000.0`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' } 
         })
@@ -178,10 +173,7 @@ export default function AmbulanceService() {
 
         fetch('http://localhost:8080/api/ambulances/book', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}` 
-            },
+            headers: { 'Content-Type': 'application/json' }, // Removed Authorization header
             body: JSON.stringify({
                 ambulanceId: unit.id,
                 pickupLat: userCoords?.lat || 22.5726,
@@ -242,12 +234,24 @@ export default function AmbulanceService() {
     const cancelBooking = () => {
         if(window.confirm("Cancel this emergency request?")) {
             fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/cancel`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                method: 'POST' // Removed Authorization header
             })
             .then(() => clearActiveTrip())
             .catch(err => alert("Failed to cancel trip: " + err.message));
         }
+    };
+
+    const submitRating = () => {
+        fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/rate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // Removed Authorization header
+            body: JSON.stringify({ rating, review: reviewText })
+        })
+        .then(res => {
+            if (res.ok) setHasRated(true);
+            else alert("Failed to submit rating.");
+        })
+        .catch(() => alert("Network error."));
     };
 
     useEffect(() => {
@@ -454,7 +458,7 @@ export default function AmbulanceService() {
                         )}
 
                         {dispatchState === "assigned" && assignedUnit && (
-                            <div className="flex flex-col h-full p-6 bg-white">
+                            <div className="flex flex-col h-full p-6 bg-white overflow-y-auto">
                                 
                                 {/* Dynamic Status Header based on Driver Acceptance */}
                                 {tripDetails?.status === "DISPATCHED" ? (
@@ -498,7 +502,7 @@ export default function AmbulanceService() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-5 flex-1">
+                                <div className="space-y-5 flex-1 mb-6">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center shrink-0 border border-slate-200">
                                             <User className="w-6 h-6 text-slate-500" />
@@ -521,7 +525,7 @@ export default function AmbulanceService() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3 mt-6">
+                                <div className="grid grid-cols-2 gap-3 mt-auto">
                                     <a 
                                         href={`tel:${tripDetails?.driverPhone || ''}`} 
                                         className="bg-cyan-600 hover:bg-cyan-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
@@ -539,15 +543,56 @@ export default function AmbulanceService() {
                         )}
 
                         {dispatchState === "completed" && (
-                            <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-emerald-50 shadow-inner">
-                                <div className="w-20 h-20 bg-emerald-200 rounded-full flex items-center justify-center mb-6">
+                            <div className="flex flex-col items-center justify-start h-full p-8 text-center bg-emerald-50 shadow-inner overflow-y-auto">
+                                <div className="w-20 h-20 bg-emerald-200 rounded-full flex items-center justify-center mb-4 mt-4 shrink-0">
                                     <CheckCircle2 className="w-10 h-10 text-emerald-700" />
                                 </div>
-                                <h3 className="font-poppins text-2xl font-bold text-blue-950 mb-3">Emergency Handled</h3>
-                                <p className="text-[15px] text-slate-600 mb-8 max-w-sm">The driver has marked this trip as successfully completed. We hope the patient is safe and receiving proper medical care.</p>
+                                <h3 className="font-poppins text-2xl font-bold text-blue-950 mb-2">Emergency Handled</h3>
+                                <p className="text-[14px] text-slate-600 mb-6 max-w-sm">The driver has marked this trip as successfully completed. We hope the patient is safe and receiving proper medical care.</p>
+                                
+                                {/* New Rating System */}
+                                <div className="w-full bg-white p-5 rounded-2xl shadow-sm border border-emerald-100 mb-6 flex-1 flex flex-col justify-center">
+                                    {!hasRated ? (
+                                        <>
+                                            <h4 className="font-bold text-blue-950 mb-3 text-[15px]">Rate your experience</h4>
+                                            <div className="flex justify-center gap-2 mb-4">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <Star 
+                                                        key={star}
+                                                        className={`w-8 h-8 cursor-pointer transition-colors ${star <= (hoverRating || rating) ? "text-yellow-500 fill-yellow-500" : "text-slate-200"}`}
+                                                        onMouseEnter={() => setHoverRating(star)}
+                                                        onMouseLeave={() => setHoverRating(0)}
+                                                        onClick={() => setRating(star)}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <textarea 
+                                                value={reviewText}
+                                                onChange={e => setReviewText(e.target.value)}
+                                                placeholder="Leave an optional review for the driver..."
+                                                className="w-full p-3 rounded-xl border border-slate-200 mb-4 text-[13px] focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none h-20"
+                                            />
+                                            <button 
+                                                onClick={submitRating}
+                                                disabled={rating === 0}
+                                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[14px] shadow-md"
+                                            >
+                                                Submit Feedback
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full">
+                                            <div className="bg-emerald-100 text-emerald-800 font-bold p-4 rounded-xl flex flex-col items-center gap-2 w-full">
+                                                <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+                                                Thank you for your feedback!
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <button 
                                     onClick={clearActiveTrip}
-                                    className="w-full bg-blue-950 hover:bg-blue-900 text-white py-4 rounded-xl text-[16px] font-bold shadow-md transition-all cursor-pointer"
+                                    className="w-full bg-blue-950 hover:bg-blue-900 text-white py-4 rounded-xl text-[15px] font-bold shadow-md transition-all cursor-pointer mt-auto"
                                 >
                                     Return to Dispatch Dashboard
                                 </button>

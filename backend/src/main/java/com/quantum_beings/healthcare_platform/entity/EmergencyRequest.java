@@ -3,6 +3,7 @@ import com.quantum_beings.healthcare_platform.enums.EmergencyRequestStatus;
 import lombok.*;
 import java.time.Instant;
 import jakarta.persistence.*;
+
 @Getter
 @Setter
 @Builder
@@ -54,6 +55,13 @@ public class EmergencyRequest {
     @Column(nullable = false)
     private EmergencyRequestStatus status = EmergencyRequestStatus.PENDING;
 
+    // --- NEW RATING FIELDS ---
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Column(name = "review_comment", columnDefinition = "TEXT")
+    private String reviewComment;
+
     @Column(nullable = false, updatable = false)
     private Instant requestedAt;
 
@@ -81,6 +89,4 @@ public class EmergencyRequest {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
-
 }

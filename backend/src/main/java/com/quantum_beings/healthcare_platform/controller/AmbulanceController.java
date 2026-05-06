@@ -128,4 +128,18 @@ public class AmbulanceController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/trip/{id}/rate")
+    public ResponseEntity<?> rateTrip(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        try {
+            Number ratingNumber = (Number) payload.get("rating");
+            Integer rating = ratingNumber != null ? ratingNumber.intValue() : null;
+            String review = (String) payload.getOrDefault("review", "");
+
+            ambulanceLocationService.rateTrip(id, rating, review);
+            return ResponseEntity.ok(Map.of("message", "Rating submitted successfully"));
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

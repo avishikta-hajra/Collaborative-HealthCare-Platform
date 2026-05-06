@@ -1,39 +1,17 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, X, MapPin, Phone, ShieldCheck,
-    Star, Activity, Clock, Droplet, Wind
+    Star, Activity, Clock, Droplet, Wind, Loader2
 } from 'lucide-react'
-import { hospitalsData } from './Hospitals'
 
 export default function Listings() {
     const navigate = useNavigate()
 
-    // Build listings directly from hospitalsData so bedsAvailable stays consistent
-    const initialListings = hospitalsData.map(h => ({
-        id: h.id,
-        name: h.name,
-        location: h.city || h.address || '',
-        address: h.address || '',
-        bedsAvailable: Number(h.bedsAvailable) || 0,
-        oxygenCylinders: h.oxygenCylinders ?? Math.max(5, Math.floor((Number(h.bedsAvailable) || 0) * 1.5)),
-        bloodUnits: h.bloodUnits ?? {
-            'A+': Math.max(0, Math.floor((Number(h.bedsAvailable) || 0) / 3)),
-            'B+': Math.max(0, Math.floor((Number(h.bedsAvailable) || 0) / 4)),
-            'O+': Math.max(0, Math.floor((Number(h.bedsAvailable) || 0) / 5))
-        },
-        phone: h.phone || '',
-        distanceKm: typeof h.distance === 'number' ? h.distance : parseFloat(String(h.distance || '').replace(/[^0-9.]/g, '')) || 0,
-        rating: h.rating || 0,
-        reviews: h.reviews || 0,
-        emergency: h.emergency || "24/7",
-        type: h.type || "Private",
-        verified: h.verified || false,
-        specialties: h.specialties || [],
-        lastUpdated: new Date().toISOString()
-    }))
-
-    const [listings] = useState(initialListings)
+    // State for live listings and loading status
+    const [listings, setListings] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [selectedListing, setSelectedListing] = useState(null)
 
     // Filter / sort state
@@ -46,7 +24,61 @@ export default function Listings() {
 
     const bloodGroups = ['Any', 'A+', 'B+', 'O+']
 
-    // Derived visible list
+    const getAuthToken = () => {
+        const authDataStr = localStorage.getItem("healthbridge.auth") || sessionStorage.getItem("healthbridge.auth");
+        return authDataStr ? JSON.parse(authDataStr).accessToken : "";
+    };
+
+    useEffect(() => {
+        const fetchListings = async (lat = null, lng = null) => {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    setError("Unauthorized: Please log in to view live listings.");
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Append coordinates to URL if we have them
+                let url = 'http://localhost:8080/api/hospitals/live-listings';
+                if (lat && lng) {
+                    url += `?lat=${lat}&lng=${lng}`;
+                }
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch listings. Please ensure you are logged in.');
+
+                const data = await response.json();
+                setListings(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        // Try to get user's location before fetching
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => fetchListings(position.coords.latitude, position.coords.longitude),
+                (error) => {
+                    console.warn("Location denied or failed, using fallback distances.");
+                    fetchListings(); // Proceed without location
+                },
+                { timeout: 5000 }
+            );
+        } else {
+            fetchListings();
+        }
+    }, []);
+
+    // Derived visible list based on filters and sorting
     const visibleListings = useMemo(() => {
         const q = query.trim().toLowerCase()
         return listings.filter(l => {
@@ -58,7 +90,7 @@ export default function Listings() {
         }).sort((a, b) => {
             switch (sortBy) {
                 case 'beds': return b.bedsAvailable - a.bedsAvailable
-                case 'distance': return a.distanceKm - b.distanceKm
+                case 'distance': return (a.distanceKm || 0) - (b.distanceKm || 0)
                 case 'blood': {
                     if (bloodGroup === 'Any') return 0
                     return (b.bloodUnits?.[bloodGroup] || 0) - (a.bloodUnits?.[bloodGroup] || 0)
@@ -85,6 +117,7 @@ export default function Listings() {
                         <p className="text-slate-600 mt-2">Check real-time availability of hospital beds, oxygen cylinders, blood banks, and critical care units before you arrive.</p>
                     </header>
 
+                    {/* Filter Section */}
                     <div className="bg-white rounded-3xl shadow-xl border-sky-700 border-2 p-4 mb-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                             <div className="flex items-center gap-3">
@@ -110,53 +143,100 @@ export default function Listings() {
                                     <option value="blood">Selected Blood Group (desc)</option>
                                     <option value="distance">Distance (asc)</option>
                                 </select>
-
                             </div>
                         </div>
                     </div>
-                    <div className="text-sm text-slate-500 p-3">Showing {visibleListings.length} facilities</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {visibleListings.map((l) => (
-                            <div key={l.id} className="bg-white rounded-3xl p-8 border-sky-700 border-2 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 flex flex-col h-full">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <h2 className="text-lg font-bold text-sky-950">{l.name}</h2>
-                                        <p className="text-sm text-slate-500">{l.location}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className={`px-2 py-1 rounded-md text-xs font-semibold ${l.bedsAvailable > 5 ? 'bg-emerald-100 text-emerald-800' : l.bedsAvailable > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
-                                            ICU: {l.bedsAvailable}
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className="flex-1">
-                                    <div className="mt-4 flex items-center gap-3 flex-wrap">
-                                        <div className="text-sm text-slate-600">Oxygen: <span className="font-semibold text-slate-800">{l.oxygenCylinders}</span></div>
-                                        {l.phone && <div className="text-sm text-slate-600">Phone: <a className="font-medium text-sky-700 hover:underline" href={`tel:${l.phone}`}>{l.phone}</a></div>}
-                                        {typeof l.distanceKm !== 'undefined' && <div className="text-sm text-slate-600">Distance: <span className="font-medium text-slate-700">{l.distanceKm} km</span></div>}
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <div className="text-sm text-slate-600 mb-2">Blood Units</div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {Object.entries(l.bloodUnits).map(([type, qty]) => (
-                                                <div key={type} className={`px-2 py-1 rounded-full text-xs font-semibold ${qty > 3 ? 'bg-emerald-100 text-emerald-800' : qty > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {type}: {qty}
+                    {/* Content Section */}
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <Loader2 className="w-12 h-12 text-cyan-600 animate-spin mb-4" />
+                            <p className="text-slate-500 font-medium text-lg">Fetching live availability...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
+                            <p className="text-red-600 font-bold text-lg mb-2">Error Loading Data</p>
+                            <p className="text-red-500">{error}</p>
+                            <button onClick={() => navigate('/login')} className="mt-4 px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                                Go to Login
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="text-sm text-slate-500 p-3">Showing {visibleListings.length} facilities</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {visibleListings.map((l) => (
+                                    <div key={l.id} className="bg-white rounded-3xl p-6 border-sky-700 border-2 hover:shadow-[0_20px_40px_rgb(6,182,212,0.06)] hover:-translate-y-1 hover:border-blue-800 transition-all duration-300 flex flex-col h-full group">
+                                        
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h2 className="text-lg font-bold text-sky-950 group-hover:text-cyan-700 transition-colors leading-tight">{l.name}</h2>
+                                                    {l.verified && <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" title="Verified Facility" />}
                                                 </div>
-                                            ))}
+                                                <p className="text-[13px] text-slate-500 flex items-center gap-1.5">
+                                                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> {l.address}, {l.location}
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Dynamic Ratings and Reviews on Card */}
+                                            <div className="flex flex-col items-end pl-2 shrink-0">
+                                                <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-200 mb-1">
+                                                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 mr-1" />
+                                                    <span className="font-bold text-yellow-700 text-xs">{l.rating}</span>
+                                                </div>
+                                                <span className="text-[10px] font-medium text-slate-400">{l.reviews} rev</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Dynamic Specialties on Card */}
+                                        {l.specialties && l.specialties.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5 mb-4">
+                                                {l.specialties.map((spec, idx) => (
+                                                    <span key={idx} className="px-2 py-1 bg-cyan-50 text-blue-800 text-[10px] font-bold rounded-md border border-cyan-100">
+                                                        {spec}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 flex-wrap">
+                                                <div className="flex items-center gap-1.5 text-sm text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                                                    <Activity className="w-4 h-4 text-cyan-600"/> ICU Beds: <span className="font-bold text-slate-800">{l.bedsAvailable}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-sm text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                                                    <Wind className="w-4 h-4 text-cyan-600"/> Oxygen: <span className="font-bold text-slate-800">{l.oxygenCylinders}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex items-center gap-3 flex-wrap">
+                                                {l.phone && <div className="text-[13px] text-slate-600 flex items-center gap-1.5"><Phone className="w-4 h-4 text-cyan-600"/> <a className="font-medium text-sky-700 hover:underline" href={`tel:${l.phone}`}>{l.phone}</a></div>}
+                                                {typeof l.distanceKm !== 'undefined' && <div className="text-[13px] text-slate-600 font-bold bg-slate-100 px-2 py-1 rounded border border-slate-200">{l.distanceKm} km away</div>}
+                                            </div>
+
+                                            <div className="mt-5">
+                                                <div className="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-2">Blood Bank Units</div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {l.bloodUnits && Object.entries(l.bloodUnits).map(([type, qty]) => (
+                                                        <div key={type} className={`px-2.5 py-1 rounded-md text-[11px] font-bold border ${qty > 3 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : qty > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                                            {type}: {qty}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6">
+                                            <button onClick={() => setSelectedListing(l)} className="w-full px-4 py-2.5 bg-cyan-600 font-bold text-white rounded-xl hover:bg-cyan-700 transition-colors shadow-sm cursor-pointer">
+                                                View Details
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="mt-6 flex items-center justify-between">
-                                    <button onClick={() => setSelectedListing(l)} className="w-full px-4 py-2.5 bg-cyan-600 font-bold text-white rounded-xl hover:bg-cyan-700 transition-colors shadow-sm cursor-pointer">
-                                        View Details
-                                    </button>
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </>
+                    )}
                 </div>
             </main>
 
@@ -164,6 +244,7 @@ export default function Listings() {
             {selectedListing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedListing(null)}>
                     <div className="bg-white rounded-3xl shadow-2xl border-2 border-sky-700 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-up" onClick={(e) => e.stopPropagation()}>
+                        
                         {/* Header */}
                         <div className="bg-white border-b-2 border-slate-100 p-6 flex items-center justify-between z-10 shrink-0">
                             <h2 className="text-xl md:text-2xl font-bold text-sky-950 flex items-center gap-2">
@@ -220,7 +301,7 @@ export default function Listings() {
                                         <Droplet className="w-8 h-8 text-red-500 mb-2" />
                                         <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Blood Units</span>
                                         <div className="flex flex-wrap justify-center gap-1.5">
-                                            {Object.entries(selectedListing.bloodUnits).map(([type, qty]) => (
+                                            {selectedListing.bloodUnits && Object.entries(selectedListing.bloodUnits).map(([type, qty]) => (
                                                 <span key={type} className={`px-2 py-0.5 rounded-md text-[13px] font-bold border ${qty > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>{type}: {qty}</span>
                                             ))}
                                         </div>
@@ -243,13 +324,10 @@ export default function Listings() {
                             )}
                         </div>
 
-                        {/* Footer Actions */}
-                        <div className="bg-white border-t-2 border-slate-100 p-6 flex gap-4 shrink-0">
-                            <button onClick={() => navigate('/telemedicine')} className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors shadow-md cursor-pointer">
+                        {/* Footer Actions (Ambulance Request Removed) */}
+                        <div className="bg-white border-t-2 border-slate-100 p-6 flex shrink-0">
+                            <button onClick={() => navigate('/telemedicine')} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors shadow-md cursor-pointer">
                                 Book Appointment
-                            </button>
-                            <button onClick={() => navigate('/ambulance')} className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-xl text-[14px] font-bold transition-colors shadow-md cursor-pointer">
-                                Request Ambulance
                             </button>
                         </div>
                     </div>

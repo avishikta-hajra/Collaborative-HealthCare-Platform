@@ -37,28 +37,29 @@ export default function DriverLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
-      <header className="bg-blue-950 text-white px-5 py-4 flex items-center justify-between shadow-lg sticky top-0 z-50">
+    <div className="min-h-screen font-sans text-slate-800 selection:bg-cyan-200 selection:text-blue-950 bg-slate-50 flex flex-col">
+      {/* Updated Header to match the global format */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-5 h-18 flex items-center justify-between transition-all duration-300 bg-blue-100/85 backdrop-blur-sm shadow-[0_10px_16px_rgba(0,0,0,0.1)] border-b-2 border-blue-200">
         <div className="flex items-center gap-3">
-          <Activity className="w-6 h-6 text-blue-400" />
+          <Activity className="w-6 h-6 text-cyan-600" />
           <div>
-            <div className="text-[13px] font-medium text-blue-300">Vehicle: {driverInfo.vehicleNumber}</div>
-            <div className="text-[15px] font-bold tracking-wide">Ambulance Fleet</div>
+            <div className="text-[13px] font-medium text-slate-600">Vehicle: {driverInfo.vehicleNumber}</div>
+            <div className="text-[15px] font-bold tracking-wide text-blue-950">Ambulance Fleet</div>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
-          <button className="relative text-blue-200 hover:text-white transition-colors cursor-pointer">
+          <button className="relative text-slate-500 hover:text-cyan-700 transition-colors cursor-pointer">
             <Bell className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-blue-950"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
 
           <div className="relative">
             <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-10 h-10 rounded-full bg-blue-800 border-2 border-blue-600 flex items-center justify-center hover:border-blue-400 transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white border-2 border-sky-200 flex items-center justify-center hover:border-cyan-400 hover:shadow-md transition-all cursor-pointer shadow-sm"
             >
-                <User className="w-5 h-5 text-white" />
+                <User className="w-5 h-5 text-cyan-600" />
             </button>
             
             {isDropdownOpen && (
@@ -82,7 +83,8 @@ export default function DriverLayout() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto pb-20">
+      {/* Added pt-24 to offset the fixed header */}
+      <main className="flex-1 overflow-y-auto pt-24 pb-20 px-2 md:px-4">
         <Outlet /> 
       </main>
 
@@ -95,12 +97,11 @@ export default function DriverLayout() {
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 p-2 w-20 rounded-xl transition-all cursor-pointer ${
                 isActive 
-                  ? "text-blue-700 bg-blue-50 font-extrabold" 
-                  : "text-slate-400 hover:text-blue-600 font-semibold"
+                  ? "text-cyan-700 bg-cyan-50 font-extrabold" 
+                  : "text-slate-400 hover:text-cyan-600 font-semibold"
               }`
             }
           >
-            {/* --- FIX IS HERE: Passing isActive to the children via a function --- */}
             {({ isActive }) => (
                 <>
                     <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px]' : ''}`} />

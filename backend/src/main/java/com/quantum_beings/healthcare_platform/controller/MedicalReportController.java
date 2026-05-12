@@ -1,7 +1,6 @@
 package com.quantum_beings.healthcare_platform.controller;
 
-import com.quantum_beings.healthcare_platform.dto.MedicalReportListItemDTO;
-import com.quantum_beings.healthcare_platform.dto.UploadMedicalReportResponseDTO;
+import com.quantum_beings.healthcare_platform.dto.*;
 import com.quantum_beings.healthcare_platform.security.CustomUserDetails;
 import com.quantum_beings.healthcare_platform.services.MedicalReportService;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +34,21 @@ public class MedicalReportController {
     ) {
         return ResponseEntity.ok(medicalReportService.getMyReports(userDetails));
     }
+    @PostMapping("/search")
+    public ResponseEntity<List<ReportSearchResultDTO>> searchReports(
+            @RequestBody ReportSearchRequestDTO request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(medicalReportService.searchMyReports(request, userDetails));
+    }
+
+    @PostMapping("/ask")
+    public ResponseEntity<ReportQuestionAnswerDTO> askQuestionAboutReports(
+            @RequestBody ReportSearchRequestDTO request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(medicalReportService.askQuestionAboutMyReports(request, userDetails));
+    }
+
 
 }

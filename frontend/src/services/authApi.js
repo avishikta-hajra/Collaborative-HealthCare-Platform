@@ -4,13 +4,19 @@ const AUTH_STORAGE_KEY = "healthbridge.auth";
 async function request(path, options = {}) {
   // Extract headers separately so they don't overwrite our defaults
   const { headers, ...restOptions } = options;
+  const isFormData = typeof FormData !== "undefined" && restOptions.body instanceof FormData;
+
+  const resolvedHeaders = {
+    ...(headers || {}),
+  };
+
+  if (!isFormData && !resolvedHeaders["Content-Type"]) {
+    resolvedHeaders["Content-Type"] = "application/json";
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...restOptions, // Put method, body, etc. first
-    headers: {
-      "Content-Type": "application/json", // Set our default
-      ...(headers || {}), // Merge any custom headers (like Authorization) safely
-    },
+    headers: resolvedHeaders,
   });
 
   const text = await response.text();
@@ -128,4 +134,25 @@ export async function authenticatedFetch(path, options = {}) {
     const refreshed = await refreshAuthSession();
     return send(refreshed?.accessToken);
   }
+}
+
+export function getMedicalReports() {
+  return authenticatedFetch("/api/reports/my");
+}
+
+export function askMedicalReports(query) {
+  return authenticatedFetch("/api/reports/ask", {
+    method: "POST",
+    body: JSON.stringify({ query }),
+  });
+}
+
+export function uploadMedicalReport(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return authenticatedFetch("/api/reports/upload", {
+    method: "POST",
+    body: formData,
+  });
 }

@@ -1,9 +1,7 @@
 package com.quantum_beings.healthcare_platform.services;
 
 import com.quantum_beings.healthcare_platform.common.exceptions.ResourceNotFoundException;
-import com.quantum_beings.healthcare_platform.dto.MedicalReportListItemDTO;
-import com.quantum_beings.healthcare_platform.dto.StoredFileResult;
-import com.quantum_beings.healthcare_platform.dto.UploadMedicalReportResponseDTO;
+import com.quantum_beings.healthcare_platform.dto.*;
 import com.quantum_beings.healthcare_platform.entity.MedicalReport;
 import com.quantum_beings.healthcare_platform.entity.MedicalReportChunk;
 import com.quantum_beings.healthcare_platform.entity.PatientProfile;
@@ -28,13 +26,15 @@ public class MedicalReportService {
     private final MedicalReportChunkRepository medicalReportChunkRepository;
     private final MedicalReportChunkingService medicalReportChunkingService;
     private final MedicalReportEmbeddingService medicalReportEmbeddingService;
+    private final MedicalReportRetrievalService medicalReportRetrievalService;
+    private final MedicalReportQaService medicalReportQaService;
 
 
 
 
     public MedicalReportService(MedicalReportRepository medicalReportRepository,
                                 PatientProfileRepository patientProfileRepository,
-                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService, MedicalReportChunkRepository medicalReportChunkRepository, MedicalReportChunkingService medicalReportChunkingService, MedicalReportEmbeddingService medicalReportEmbeddingService) {
+                                MedicalReportStorageService medicalReportStorageService, PdfTextExtractionService pdfTextExtractionService, MedicalReportChunkRepository medicalReportChunkRepository, MedicalReportChunkingService medicalReportChunkingService, MedicalReportEmbeddingService medicalReportEmbeddingService, MedicalReportRetrievalService medicalReportRetrievalService, MedicalReportQaService medicalReportQaService) {
         this.medicalReportRepository = medicalReportRepository;
         this.patientProfileRepository = patientProfileRepository;
         this.medicalReportStorageService = medicalReportStorageService;
@@ -42,6 +42,8 @@ public class MedicalReportService {
         this.medicalReportChunkRepository = medicalReportChunkRepository;
         this.medicalReportChunkingService = medicalReportChunkingService;
         this.medicalReportEmbeddingService = medicalReportEmbeddingService;
+        this.medicalReportRetrievalService = medicalReportRetrievalService;
+        this.medicalReportQaService = medicalReportQaService;
     }
 
     public UploadMedicalReportResponseDTO uploadReport(MultipartFile file,
@@ -124,6 +126,25 @@ public class MedicalReportService {
                 ))
                 .toList();
     }
+    public List<ReportSearchResultDTO> searchMyReports(ReportSearchRequestDTO request,
+                                                       CustomUserDetails userDetails) {
+        PatientProfile patientProfile = patientProfileRepository
+                .findByAccount_Email(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for logged-in user"));
+
+        return medicalReportRetrievalService.searchPatientReports(request.query(), patientProfile.getId());
+    }
+
+    public ReportQuestionAnswerDTO askQuestionAboutMyReports(ReportSearchRequestDTO request,
+                                                             CustomUserDetails userDetails) {
+        PatientProfile patientProfile = patientProfileRepository
+                .findByAccount_Email(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for logged-in user"));
+
+        return medicalReportQaService.answerPatientQuestion(request.query(), patientProfile.getId());
+    }
+
+
 
 }
 

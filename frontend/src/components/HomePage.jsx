@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import About from "./About";
+import MedicalReportAssistant from "./MedicalReportAssistant";
 // Using Lucide React
 import {
     Menu, X, Video, Hospital,
     Ambulance, AlertTriangle, Activity,
-    Landmark, ChevronRight, ChevronDown, User, LogOut
+    Landmark, ChevronRight, ChevronDown, User, LogOut, Bot
 } from "lucide-react";
 import { getAuthSession } from "../services/authApi"; // Import auth helper
 
@@ -115,6 +116,7 @@ export default function HomePage() {
     // Auth States
     const [authSession, setAuthSession] = useState(null);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [isReportAssistantOpen, setIsReportAssistantOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -198,34 +200,60 @@ export default function HomePage() {
                 {/* Right Side: Actions (Auth / Profile) */}
                 <div className="flex items-center gap-4 relative">
                     {authSession ? (
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                                className="flex items-center gap-2 p-1 pr-3 rounded-full bg-white border-2 border-blue-200 hover:border-cyan-400 hover:shadow-md transition-all cursor-pointer"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-sky-700 flex items-center justify-center text-white">
-                                    <User className="w-4 h-4" />
-                                </div>
-                                <span className="text-[14px] font-bold text-blue-950 hidden sm:block capitalize">
-                                    {authSession.role ? authSession.role.toLowerCase() : 'User'}
-                                </span>
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {isProfileDropdownOpen && (
-                                <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-xl shadow-xl border-2 border-slate-100 py-2 z-50 animate-fade-in">
-                                    <div className="px-4 py-3 border-b border-slate-100 mb-1 bg-slate-50/50">
-                                        <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Signed in as</p>
-                                        <p className="text-[14px] font-bold text-blue-950 truncate">{authSession.email}</p>
-                                    </div>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full text-left px-4 py-3 text-[14px] font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
-                                    >
-                                        <LogOut className="w-4 h-4" /> Sign Out
-                                    </button>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            {authSession.role === "USER" && (
+                                <button
+                                    onClick={() => {
+                                        setIsReportAssistantOpen(true);
+                                        setIsProfileDropdownOpen(false);
+                                    }}
+                                    className="hidden sm:inline-flex items-center gap-2 rounded-full border-2 border-cyan-300 bg-white px-4 py-2 text-[13px] font-bold tracking-wide text-cyan-700 shadow-sm transition-all hover:border-cyan-400 hover:shadow-md"
+                                >
+                                    <Bot className="h-4 w-4" />
+                                    RAG Summarizer
+                                </button>
                             )}
+
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                    className="flex items-center gap-2 p-1 pr-3 rounded-full bg-white border-2 border-blue-200 hover:border-cyan-400 hover:shadow-md transition-all cursor-pointer"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-sky-700 flex items-center justify-center text-white">
+                                        <User className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-[14px] font-bold text-blue-950 hidden sm:block capitalize">
+                                        {authSession.role ? authSession.role.toLowerCase() : 'User'}
+                                    </span>
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {isProfileDropdownOpen && (
+                                    <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-xl shadow-xl border-2 border-slate-100 py-2 z-50 animate-fade-in">
+                                        <div className="px-4 py-3 border-b border-slate-100 mb-1 bg-slate-50/50">
+                                            <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Signed in as</p>
+                                            <p className="text-[14px] font-bold text-blue-950 truncate">{authSession.email}</p>
+                                        </div>
+                                        {authSession.role === "USER" && (
+                                            <button
+                                                onClick={() => {
+                                                    setIsReportAssistantOpen(true);
+                                                    setIsProfileDropdownOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-3 text-[14px] font-bold text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                            >
+                                                <Bot className="w-4 h-4" /> Open RAG Summarizer
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full text-left px-4 py-3 text-[14px] font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                            <LogOut className="w-4 h-4" /> Sign Out
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <button className="px-5 py-2.5 text-[14px] font-semibold tracking-widest text-white bg-blue-950 rounded-lg hover:bg-blue-800 hover:shadow-lg hover:shadow-blue-900/30 transition-all cursor-pointer" onClick={() => navigate('/PortalSelection')}>
@@ -356,6 +384,11 @@ export default function HomePage() {
                 </div>
                 <p className="text-slate-500 text-[14px] text-center">Built with care for better health outcomes</p>
             </footer>
+
+            <MedicalReportAssistant
+                open={isReportAssistantOpen}
+                onClose={() => setIsReportAssistantOpen(false)}
+            />
         </div>
     );
 }

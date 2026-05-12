@@ -204,19 +204,19 @@ export default function HomePage() {
                             {authSession.role === "USER" && (
                                 <button
                                     onClick={() => {
-                                        setIsReportAssistantOpen(true);
+                                        navigate("/my-health-profile");
                                         setIsProfileDropdownOpen(false);
                                     }}
                                     className="hidden sm:inline-flex items-center gap-2 rounded-full border-2 border-cyan-300 bg-white px-4 py-2 text-[13px] font-bold tracking-wide text-cyan-700 shadow-sm transition-all hover:border-cyan-400 hover:shadow-md"
                                 >
-                                    <Bot className="h-4 w-4" />
-                                    RAG Summarizer
+                                    <User className="h-4 w-4" />
+                                    Health Profile
                                 </button>
                             )}
 
                             <div className="relative">
                                 <button
-                                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                    onClick={() => navigate("/my-health-profile")}
                                     className="flex items-center gap-2 p-1 pr-3 rounded-full bg-white border-2 border-blue-200 hover:border-cyan-400 hover:shadow-md transition-all cursor-pointer"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-sky-700 flex items-center justify-center text-white">
@@ -234,6 +234,17 @@ export default function HomePage() {
                                             <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Signed in as</p>
                                             <p className="text-[14px] font-bold text-blue-950 truncate">{authSession.email}</p>
                                         </div>
+                                        {authSession.role === "USER" && (
+                                            <button
+                                                onClick={() => {
+                                                    navigate("/my-health-profile");
+                                                    setIsProfileDropdownOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-3 text-[14px] font-bold text-blue-950 hover:bg-blue-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                            >
+                                                <User className="w-4 h-4" /> Health Profile Dashboard
+                                            </button>
+                                        )}
                                         {authSession.role === "USER" && (
                                             <button
                                                 onClick={() => {

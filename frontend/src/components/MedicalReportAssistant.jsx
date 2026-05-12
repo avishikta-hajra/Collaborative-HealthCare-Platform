@@ -139,8 +139,9 @@ export default function MedicalReportAssistant({ open, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center bg-blue-950/35 px-4 py-24 backdrop-blur-sm">
-      <div className="w-full max-w-5xl overflow-hidden rounded-[28px] border-2 border-blue-200 bg-white shadow-[0_25px_80px_rgba(15,23,42,0.22)]">
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-blue-950/35 px-4 py-8 backdrop-blur-sm md:px-6 md:py-10">
+      <div className="flex min-h-full items-center justify-center">
+        <div className="flex max-h-[min(860px,calc(100vh-2rem))] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border-2 border-blue-200 bg-white shadow-[0_25px_80px_rgba(15,23,42,0.22)] md:max-h-[calc(100vh-5rem)]">
         <div className="flex items-center justify-between border-b border-blue-100 bg-linear-to-r from-blue-50 via-cyan-50 to-blue-100 px-6 py-5">
           <div>
             <div className="flex items-center gap-3">
@@ -166,8 +167,8 @@ export default function MedicalReportAssistant({ open, onClose }) {
           </button>
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="border-b border-blue-100 bg-slate-50/70 p-5 lg:border-b-0 lg:border-r">
+        <div className="grid min-h-0 flex-1 gap-0 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="overflow-y-auto border-b border-blue-100 bg-slate-50/70 p-5 lg:border-b-0 lg:border-r">
             <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-700">
                 Reports
@@ -230,7 +231,7 @@ export default function MedicalReportAssistant({ open, onClose }) {
             </div>
           </aside>
 
-          <section className="p-6 md:p-7">
+          <section className="min-h-0 overflow-y-auto p-6 md:p-7">
             {activeTab === "upload" ? (
               <div className="space-y-5">
                 <div>
@@ -389,6 +390,7 @@ export default function MedicalReportAssistant({ open, onClose }) {
             )}
           </section>
         </div>
+      </div>
       </div>
     </div>
   );

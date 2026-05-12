@@ -17,6 +17,7 @@ import DriverHistory from "./components/driver/DriverHistory";
 import DriverProfile from "./components/driver/DriverProfile";
 import HealthTip from "./components/HealthTip";
 import ModuleSelection from "./components/ModuleSelection";
+import UserHealthDashboard from "./components/UserHealthDashboard";
 export default function App() {
   return (
     <Router>
@@ -35,6 +36,7 @@ export default function App() {
         {/* /gamification now links to ModuleSelection Page */}
         <Route path="/gamification" element={<ModuleSelection />} />
         <Route path="/health-tips" element={<HealthTip />} />
+        <Route path="/my-health-profile" element={<UserHealthDashboard />} />
         <Route path="/quiz" element={<Gamified />} />
         <Route path="/driver-portal" element={<DriverLayout />}>
           <Route index element={<DriverDashboard />} />

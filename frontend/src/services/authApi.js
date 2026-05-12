@@ -156,3 +156,7 @@ export function uploadMedicalReport(file) {
     body: formData,
   });
 }
+
+export function getMyHealthDashboard() {
+  return authenticatedFetch("/api/patients/me/dashboard");
+}

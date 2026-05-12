@@ -18,6 +18,8 @@ const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquareText },
 ];
 
+const ANSWERED_STATUS = "ANSWERED";
+
 export default function MedicalReportAssistant({ open, onClose }) {
   const [activeTab, setActiveTab] = useState("upload");
   const [reports, setReports] = useState([]);
@@ -344,7 +346,11 @@ export default function MedicalReportAssistant({ open, onClose }) {
                       Ask Assistant
                     </button>
                     <button
-                      onClick={() => setQuestion("")}
+                      onClick={() => {
+                        setQuestion("");
+                        setAnswerPayload(null);
+                        setAskError("");
+                      }}
                       className="rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-bold text-blue-950 transition-colors hover:bg-blue-50"
                     >
                       Clear
@@ -363,27 +369,61 @@ export default function MedicalReportAssistant({ open, onClose }) {
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-700">
-                        Supporting Chunks
-                      </p>
-                      <div className="mt-3 space-y-3">
-                        {answerPayload.supportingChunks.map((chunk, index) => (
-                          <div
-                            key={`${chunk.reportId}-${chunk.chunkIndex}-${index}`}
-                            className="rounded-[22px] border border-blue-100 bg-white p-4 shadow-sm"
-                          >
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              <span>{chunk.originalFileName}</span>
-                              <span className="text-cyan-700">Chunk {chunk.chunkIndex + 1}</span>
-                            </div>
-                            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                              {chunk.content}
-                            </p>
+                    {Array.isArray(answerPayload.summarySections) &&
+                      answerPayload.summarySections.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-700">
+                            Clinical Summary
+                          </p>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {answerPayload.summarySections.map((section, index) => (
+                              <div
+                                key={`${section.title}-${index}`}
+                                className="rounded-[22px] border border-blue-100 bg-white p-4 shadow-sm"
+                              >
+                                <p className="text-sm font-bold text-blue-950">{section.title}</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">
+                                  {section.content}
+                                </p>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )}
+
+                    {answerPayload.answerStatus === ANSWERED_STATUS &&
+                      Array.isArray(answerPayload.supportingChunks) &&
+                      answerPayload.supportingChunks.length > 0 && (
+                        <div>
+                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-700">
+                            Supporting Chunks
+                          </p>
+                          <div className="mt-3 space-y-3">
+                            {answerPayload.supportingChunks.map((chunk, index) => (
+                              <div
+                                key={`${chunk.reportId}-${chunk.chunkIndex}-${index}`}
+                                className="rounded-[22px] border border-blue-100 bg-white p-4 shadow-sm"
+                              >
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                  <span>{chunk.originalFileName}</span>
+                                  <span className="text-cyan-700">Chunk {chunk.chunkIndex + 1}</span>
+                                </div>
+                                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                                  {chunk.content}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {answerPayload.answerStatus !== ANSWERED_STATUS && (
+                      <div className="rounded-[22px] border border-blue-100 bg-white p-4 shadow-sm">
+                        <p className="text-sm font-medium text-slate-600">
+                          No directly supporting report excerpt was found for this question.
+                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>

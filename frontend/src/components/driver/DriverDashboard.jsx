@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin, Navigation, Power, CheckCircle2, Phone, ShieldAlert, Clock } from "lucide-react";
+import { buildAbsoluteUrl } from "../../services/runtimeConfig";
 
 export default function DriverDashboard() {
     const [isOnline, setIsOnline] = useState(false); 
@@ -17,7 +18,7 @@ export default function DriverDashboard() {
     useEffect(() => {
         const handleBeforeUnload = () => {
             if (isOnline) {
-                fetch('http://localhost:8080/api/ambulances/driver/status', {
+                fetch(buildAbsoluteUrl('/api/ambulances/driver/status'), {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${getAuthToken()}` },
                     keepalive: true // Crucial: ensures request finishes even when closing tab
@@ -30,7 +31,7 @@ export default function DriverDashboard() {
     }, [isOnline]);
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/ambulances/driver/me', {
+        fetch(buildAbsoluteUrl('/api/ambulances/driver/me'), {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         })
         .then(res => res.ok ? res.json() : null)
@@ -42,7 +43,7 @@ export default function DriverDashboard() {
         if (!isOnline) return;
 
         const fetchTrip = () => {
-            fetch('http://localhost:8080/api/ambulances/driver/active-trip', {
+            fetch(buildAbsoluteUrl('/api/ambulances/driver/active-trip'), {
                 headers: { 'Authorization': `Bearer ${getAuthToken()}` }
             })
             .then(res => {
@@ -79,7 +80,7 @@ export default function DriverDashboard() {
         // Optimistic UI Update: change state instantly to fix the lag
         setIsOnline(nextStatus); 
 
-        fetch('http://localhost:8080/api/ambulances/driver/status', {
+        fetch(buildAbsoluteUrl('/api/ambulances/driver/status'), {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         })
@@ -97,7 +98,7 @@ export default function DriverDashboard() {
         setActiveTrip(updatedTrip);
         activeTripRef.current = updatedTrip; 
 
-        fetch(`http://localhost:8080/api/ambulances/trip/${activeTrip.id}/accept`, {
+        fetch(buildAbsoluteUrl(`/api/ambulances/trip/${activeTrip.id}/accept`), {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         })
@@ -111,7 +112,7 @@ export default function DriverDashboard() {
         const tripId = activeTrip.id;
         activeTripRef.current = null;
 
-        fetch(`http://localhost:8080/api/ambulances/trip/${tripId}/complete`, {
+        fetch(buildAbsoluteUrl(`/api/ambulances/trip/${tripId}/complete`), {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         })

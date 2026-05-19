@@ -4,6 +4,7 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { LogOut, Send, Users, Activity, ArrowLeft, MessageSquare } from 'lucide-react';
 import { authenticatedFetch } from '../services/authApi';
+import { buildWebSocketUrl } from '../services/runtimeConfig';
 
 import VideoRoom from "./VideoRoom";
 
@@ -69,7 +70,7 @@ export default function DoctorDashboard() {
 
         // Connect WebSocket
         // Connect WebSocket
-        const socket = new SockJS("http://localhost:8080/ws-telemedicine");
+        const socket = new SockJS(buildWebSocketUrl("/ws-telemedicine"));
         const client = new Client({
             webSocketFactory: () => socket,
             onConnect: () => {

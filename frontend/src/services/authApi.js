@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+import { buildAbsoluteUrl } from "./runtimeConfig";
+
 const AUTH_STORAGE_KEY = "healthbridge.auth";
 
 async function request(path, options = {}) {
@@ -14,7 +15,7 @@ async function request(path, options = {}) {
     resolvedHeaders["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(buildAbsoluteUrl(path), {
     ...restOptions, // Put method, body, etc. first
     headers: resolvedHeaders,
   });

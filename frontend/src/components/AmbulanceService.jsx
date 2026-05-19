@@ -10,6 +10,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { buildAbsoluteUrl } from "../services/runtimeConfig";
 
 const ambulanceTypes = [
     { id: "bls", name: "Basic Life Support (BLS)", desc: "For stable patients requiring basic monitoring.", baseCharge: "₹800", perKm: "₹15" },
@@ -111,7 +112,7 @@ export default function AmbulanceService() {
         let interval;
         if (activeOrderId && dispatchState === "assigned") {
             const fetchStatus = () => {
-                fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/status`)
+                fetch(buildAbsoluteUrl(`/api/ambulances/trip/${activeOrderId}/status`))
                 .then(res => res.json())
                 .then(data => {
                     setTripDetails(data);
@@ -134,7 +135,7 @@ export default function AmbulanceService() {
     }, [activeOrderId, dispatchState]);
 
     const fetchNearbyAmbulances = (lat, lng) => {
-        fetch(`http://localhost:8080/api/ambulances/nearby?lat=${lat}&lng=${lng}&radius=2000.0`, {
+        fetch(buildAbsoluteUrl(`/api/ambulances/nearby?lat=${lat}&lng=${lng}&radius=2000.0`), {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' } 
         })
@@ -171,7 +172,7 @@ export default function AmbulanceService() {
     const executeBooking = (unit) => {
         setDispatchState("searching");
 
-        fetch('http://localhost:8080/api/ambulances/book', {
+        fetch(buildAbsoluteUrl("/api/ambulances/book"), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }, // Removed Authorization header
             body: JSON.stringify({
@@ -233,7 +234,7 @@ export default function AmbulanceService() {
 
     const cancelBooking = () => {
         if(window.confirm("Cancel this emergency request?")) {
-            fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/cancel`, {
+            fetch(buildAbsoluteUrl(`/api/ambulances/trip/${activeOrderId}/cancel`), {
                 method: 'POST' // Removed Authorization header
             })
             .then(() => clearActiveTrip())
@@ -242,7 +243,7 @@ export default function AmbulanceService() {
     };
 
     const submitRating = () => {
-        fetch(`http://localhost:8080/api/ambulances/trip/${activeOrderId}/rate`, {
+        fetch(buildAbsoluteUrl(`/api/ambulances/trip/${activeOrderId}/rate`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }, // Removed Authorization header
             body: JSON.stringify({ rating, review: reviewText })

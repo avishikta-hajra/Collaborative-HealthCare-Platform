@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User, Truck, Shield, Star, Phone, Mail } from "lucide-react";
+import { buildAbsoluteUrl } from "../../services/runtimeConfig";
 
 export default function DriverProfile() {
   const [profile, setProfile] = useState(null);
@@ -10,7 +11,7 @@ export default function DriverProfile() {
   };
 
   useEffect(() => {
-      fetch('http://localhost:8080/api/ambulances/driver/me', {
+      fetch(buildAbsoluteUrl('/api/ambulances/driver/me'), {
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       })
       .then(res => res.ok ? res.json() : null)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { Home, Clock, User, Bell, Activity, LogOut } from "lucide-react";
+import { buildAbsoluteUrl } from "../../services/runtimeConfig";
 
 export default function DriverLayout() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function DriverLayout() {
   };
 
   useEffect(() => {
-      fetch('http://localhost:8080/api/ambulances/driver/me', {
+      fetch(buildAbsoluteUrl('/api/ambulances/driver/me'), {
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       })
       .then(res => res.ok ? res.json() : null)

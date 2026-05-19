@@ -4,6 +4,7 @@ import {
     ArrowLeft, X, MapPin, Phone, ShieldCheck,
     Star, Activity, Clock, Droplet, Wind, Loader2
 } from 'lucide-react'
+import { buildAbsoluteUrl } from '../services/runtimeConfig'
 
 export default function Listings() {
     const navigate = useNavigate()
@@ -40,7 +41,7 @@ export default function Listings() {
                 }
 
                 // Append coordinates to URL if we have them
-                let url = 'http://localhost:8080/api/hospitals/live-listings';
+                let url = buildAbsoluteUrl('/api/hospitals/live-listings');
                 if (lat && lng) {
                     url += `?lat=${lat}&lng=${lng}`;
                 }

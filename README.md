@@ -32,13 +32,19 @@ HealthBridge is a centralized, microservices-based healthcare platform designed 
 
 **Backend:**
 * [Java](https://www.java.com/) & [Spring Boot](https://spring.io/projects/spring-boot) - Robust framework handling the microservices architecture.
-* [MySQL](https://www.mysql.com/) - Relational database for structured, secure data and user management.
+* [PostgreSQL](https://www.postgresql.org/) + `pgvector` - Relational database and vector search for medical record retrieval.
 
 ## Prerequisites
 * Node.js (v18+)
-* Java 17+
+* Java 21+
 * Maven or Gradle
-* MySQL Server (v8.0+)
+* PostgreSQL Server with `pgvector`
+
+## Deployment
+
+Use the step-by-step guide in [DEPLOYMENT.md](/Users/adityadebnath/Projects/Playground/Collaborative-HealthCare-Platform/DEPLOYMENT.md) to deploy:
+- `frontend/` to Vercel
+- `backend/` to Render
 
 ## Database Setup For Teams
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MapPin, CheckCircle2 } from "lucide-react";
+import { buildAbsoluteUrl } from "../../services/runtimeConfig";
 
 export default function DriverHistory() {
   const [pastTrips, setPastTrips] = useState([]);
@@ -10,7 +11,7 @@ export default function DriverHistory() {
   };
 
   useEffect(() => {
-      fetch('http://localhost:8080/api/ambulances/driver/history', {
+      fetch(buildAbsoluteUrl('/api/ambulances/driver/history'), {
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       })
       .then(res => res.ok ? res.json() : null)
